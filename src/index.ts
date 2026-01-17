@@ -7,7 +7,6 @@ import { Templates } from './resources/Templates';
 import { Organizations } from './resources/Organizations';
 import { ApiKeys } from './resources/ApiKeys';
 
-// Export types for consumers
 export {
     SDKConfig,
     User,
@@ -22,7 +21,11 @@ export {
     WebhookUpdateResponse,
     ApiKey,
     GeneratedApiKey,
-    AuthResponse
+    AuthResponse,
+    RevenueRecoveryWebhookEvent,
+    AbacatePayWebhookEvent,
+    MessageStatusWebhookEvent,
+    AraraWebhookEvent
 } from './types';
 
 export class NodeSDK {

@@ -97,3 +97,55 @@ export interface AuthResponse {
     isAuthenticated: boolean;
     apiKey?: string;
 }
+
+// --- WEBHOOK EVENTS ---
+
+/**
+ * Evento de Recuperação de Receita (Carrinho Abandonado, Pix Gerado, etc.)
+ */
+export interface RevenueRecoveryWebhookEvent {
+    event: 'cart.abandoned' | 'payment.failed' | 'pix.created' | 'boleto.due';
+    name?: string;
+    phone: string;
+    total?: number;
+    checkout_url: string;
+    minutes_without_payment?: number;
+    pix_qr_code?: string;
+}
+
+/**
+ * Evento do Gateway de Pagamento (AbacatePay)
+ */
+export interface AbacatePayWebhookEvent {
+    event: 'billing.paid';
+    data: {
+        id?: string;
+        billing?: {
+            id: string;
+            amount: number;
+            status: string;
+            customer?: {
+                id?: string;
+                metadata?: Record<string, any>;
+            };
+            metadata?: Record<string, any>;
+        };
+    };
+}
+
+/**
+ * Evento de mudança de status da Mensagem (Enviado, Entregue, Lido...)
+ */
+export interface MessageStatusWebhookEvent {
+    MessageSid: string;
+    MessageStatus: 'queued' | 'processing' | 'sent' | 'delivered' | 'read' | 'failed' | 'canceled';
+    From: string;
+    To: string;
+    MessageId: string;
+    Timestamp: string;
+}
+
+/**
+ * Union type para tipar o body de qualquer webhook recebido da Arara
+ */
+export type AraraWebhookEvent = RevenueRecoveryWebhookEvent | AbacatePayWebhookEvent | MessageStatusWebhookEvent;
