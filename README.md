@@ -5,11 +5,11 @@ O SDK oficial para integração com a plataforma **AraraHQ**. Este pacote fornec
 ## Instalação
 
 ```bash
-npm install arara-node-sdk
+npm install ararahq
 # ou
-yarn add arara-node-sdk
+yarn add ararahq
 # ou
-pnpm add arara-node-sdk
+pnpm add ararahq
 ```
 
 ## Configuração
@@ -17,7 +17,7 @@ pnpm add arara-node-sdk
 Importe e inicialize o SDK com sua chave de API (obtida no painel administrativo).
 
 ```typescript
-import { NodeSDK } from 'arara-node-sdk';
+import { NodeSDK } from 'ararahq';
 
 const sdk = new NodeSDK({
   baseUrl: 'https://api.ararahq.com/api', // ou sua URL da API
@@ -111,7 +111,7 @@ console.log(`Nova chave gerada: ${newKey.plainTextKey}`);
 O SDK exporta tipos para ajudar você a processar os webhooks que sua aplicação recebe da Arara (ex: Recuperação de Carrinho, Status de Mensagem).
 
 ```typescript
-import { AraraWebhookEvent } from 'arara-node-sdk';
+import { AraraWebhookEvent } from 'ararahq';
 import express from 'express';
 
 const app = express();

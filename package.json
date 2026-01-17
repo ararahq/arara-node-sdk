@@ -1,5 +1,5 @@
 {
-  "name": "arara-node-sdk",
+  "name": "ararahq",
   "version": "1.0.0",
   "description": "Este repositório contém o SDK oficial da Arara para **[Linguagem/Plataforma]**.",
   "main": "./dist/index.js",
