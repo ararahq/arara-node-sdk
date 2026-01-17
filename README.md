@@ -106,6 +106,31 @@ const newKey = await sdk.apiKeys.create('LIVE');
 console.log(`Nova chave gerada: ${newKey.plainTextKey}`);
 ```
 
+### 7. Tipagem de Webhooks (Eventos de Entrada)
+
+O SDK exporta tipos para ajudar você a processar os webhooks que sua aplicação recebe da Arara (ex: Recuperação de Carrinho, Status de Mensagem).
+
+```typescript
+import { AraraWebhookEvent } from 'arara-node-sdk';
+import express from 'express';
+
+const app = express();
+
+app.post('/webhook/arara', (req, res) => {
+  const event = req.body as AraraWebhookEvent;
+
+  if (event.event === 'cart.abandoned') {
+    console.log(`Carrinho abandonado por: ${event.phone}, Valor: ${event.total}`);
+  }
+
+  if (event.event === 'billing.paid') {
+     console.log(`Pagamento confirmado! ID: ${event.data.billing.id}`);
+  }
+
+  res.sendStatus(200);
+});
+```
+
 ## Tratamento de Erros
 
 O SDK utiliza `axios` internamente. Erros de API retornarão exceções que podem ser tratadas via `try/catch`.
