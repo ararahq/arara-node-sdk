@@ -2,11 +2,19 @@
   "compilerOptions": {
     "target": "ES2020",
     "module": "CommonJS",
-    "declaration": true,      // Gera os arquivos de tipos (.d.ts) para o Front
-    "outDir": "./dist",       // Onde o código compilado vai ficar
-    "strict": true,           // Mais segurança no código
+    "declaration": true, // Gera os arquivos de tipos (.d.ts) para o Front
+    "outDir": "./dist", // Onde o código compilado vai ficar
+    "strict": true, // Mais segurança no código
     "esModuleInterop": true,
     "skipLibCheck": true
   },
-  "include": ["src", "teste-manual.ts"]
+  "include": [
+    "src",
+    "local-tests"
+  ],
+  "compilerOptions": {
+    "types": [
+      "node"
+    ]
+  }
 }
