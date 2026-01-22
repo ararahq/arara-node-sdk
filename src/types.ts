@@ -1,8 +1,12 @@
 export interface SDKConfig {
+    /** Chave de API da Arara (começa com 'sk_live_' ou 'sk_test_') */
     apiKey?: string;
+    /** URL base da API (padrão: https://api.ararahq.com/api) */
     baseUrl: string;
     timeout?: number;
 }
+
+// USUÁRIOS (Contacts)
 
 export interface User {
     name: string;
@@ -15,6 +19,8 @@ export interface UpdateUserRequest {
     name?: string;
     phoneNumber?: string;
 }
+
+// MENSAGENS
 
 export interface SendMessageRequest {
     receiver: string;
@@ -29,6 +35,8 @@ export interface MessageResponse {
     sender: string;
     receiver: string;
 }
+
+// TEMPLATES
 
 export interface Template {
     id: string;
@@ -56,6 +64,8 @@ export interface TemplateStatus {
     category: string;
 }
 
+// WEBHOOKS E INTEGRAÇÕES
+
 export interface UpdateWebhookRequest {
     url?: string;
     secret?: string;
@@ -72,6 +82,8 @@ export interface WebhookUpdateResponse {
     url: string;
     secret: string;
 }
+
+// API KEYS
 
 export interface ApiKey {
     id: string;
@@ -90,6 +102,8 @@ export interface GeneratedApiKey {
     createdAt: string;
 }
 
+// AUTH
+
 export interface AuthResponse {
     user: User;
     token: string;
@@ -98,7 +112,7 @@ export interface AuthResponse {
     apiKey?: string;
 }
 
-// --- WEBHOOK EVENTS ---
+// EVENTOS DE WEBHOOK (Types)
 
 /**
  * Evento de Recuperação de Receita (Carrinho Abandonado, Pix Gerado, etc.)

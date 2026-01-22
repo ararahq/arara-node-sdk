@@ -39,13 +39,18 @@ export class NodeSDK {
     public apiKeys: ApiKeys;
 
     constructor(config: SDKConfig) {
+        const headers: Record<string, string> = {
+            'Content-Type': 'application/json'
+        };
+
+        if (config.apiKey) {
+            headers['Authorization'] = `Bearer ${config.apiKey}`;
+        }
+
         this.client = axios.create({
             baseURL: config.baseUrl,
             timeout: config.timeout || 10000,
-            headers: {
-                'Authorization': config.apiKey ? `Bearer ${config.apiKey}` : '',
-                'Content-Type': 'application/json'
-            }
+            headers
         });
 
         this.auth = new Auth(this.client);
