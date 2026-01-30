@@ -61,3 +61,5 @@ export class NodeSDK {
         this.apiKeys = new ApiKeys(this.client);
     }
 }
+
+export { WebhookUtils } from './utils/WebhookUtils';
