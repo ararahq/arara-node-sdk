@@ -6,15 +6,15 @@
     "outDir": "./dist", // Onde o código compilado vai ficar
     "strict": true, // Mais segurança no código
     "esModuleInterop": true,
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "types": [
+      "node",
+      "jest"
+    ]
   },
   "include": [
     "src",
-    "local-tests"
-  ],
-  "compilerOptions": {
-    "types": [
-      "node"
-    ]
-  }
+    "local-tests",
+    "tests"
+  ]
 }
