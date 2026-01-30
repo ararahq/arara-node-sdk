@@ -16,13 +16,7 @@ export class Users extends BaseResource {
      * PATCH /users/me
      */
     async update(data: UpdateUserRequest): Promise<User> {
-        const response = await this.client.patch<any>('/users/me', data);
-        const result = response.data;
-
-        return {
-            name: result.name,
-            email: "",
-            phoneNumber: result.phoneNumber,
-        } as User;
+        const response = await this.client.patch<User>('/users/me', data);
+        return response.data;
     }
 }
