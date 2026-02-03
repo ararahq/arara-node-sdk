@@ -1,7 +1,7 @@
 {
   "name": "ararahq",
   "version": "1.0.0",
-  "description": "Este repositório contém o SDK oficial da Arara para **[Linguagem/Plataforma]**.",
+  "description": "Este repositório contém o SDK oficial da Arara para Node.js.",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
@@ -14,9 +14,16 @@
     "type": "git",
     "url": "git+https://github.com/ararahq/arara-node-sdk.git"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "keywords": [
+    "arara",
+    "whatsapp",
+    "sdk",
+    "messaging",
+    "api",
+    "typescript"
+  ],
+  "author": "Arara HQ",
+  "license": "MIT",
   "type": "commonjs",
   "bugs": {
     "url": "https://github.com/ararahq/arara-node-sdk/issues"

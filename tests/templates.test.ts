@@ -29,10 +29,6 @@ describe('Templates Resource', () => {
         const mockResponse = { data: [{ id: '1', name: 'temp1' }] };
         const mockGet = jest.fn().mockResolvedValue(mockResponse);
 
-        // Re-mock return value for this test specifically if needed, or update the shared mock
-        (sdk as any).client.get = mockGet; // Direct injection since client is private but we are in test
-
-        // Better way: Re-instantiate with specific mock
         mockedAxios.create.mockReturnValue({
             get: mockGet,
             defaults: { headers: {} },

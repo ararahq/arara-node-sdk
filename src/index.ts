@@ -39,13 +39,17 @@ export class NodeSDK {
     public apiKeys: ApiKeys;
 
     constructor(config: SDKConfig) {
+        if (!config.apiKey || config.apiKey.trim() === '') {
+            throw new Error(
+                'SDKConfig.apiKey is required to instantiate NodeSDK. Please provide a valid API key.'
+            );
+        }
+
         const headers: Record<string, string> = {
             'Content-Type': 'application/json'
         };
 
-        if (config.apiKey) {
-            headers['Authorization'] = `Bearer ${config.apiKey}`;
-        }
+        headers['Authorization'] = `Bearer ${config.apiKey}`;
 
         this.client = axios.create({
             baseURL: config.baseUrl,

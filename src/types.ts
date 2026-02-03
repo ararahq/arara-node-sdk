@@ -1,12 +1,12 @@
 export interface SDKConfig {
-    /** Chave de API da Arara (começa com 'sk_live_' ou 'sk_test_') */
+    /** Arara API Key (starts with 'sk_live_' or 'sk_test_') */
     apiKey?: string;
-    /** URL base da API (padrão: https://api.ararahq.com/api) */
+    /** API Base URL (default: https://api.ararahq.com/api) */
     baseUrl: string;
     timeout?: number;
 }
 
-// USUÁRIOS (Contacts)
+// USERS (Contacts)
 
 export interface User {
     name: string;
@@ -20,7 +20,7 @@ export interface UpdateUserRequest {
     phoneNumber?: string;
 }
 
-// MENSAGENS
+// MESSAGES
 
 export interface SendMessageRequest {
     receiver: string;
@@ -64,7 +64,7 @@ export interface TemplateStatus {
     category: string;
 }
 
-// WEBHOOKS E INTEGRAÇÕES
+// WEBHOOKS AND INTEGRATIONS
 
 export interface UpdateWebhookRequest {
     url?: string;
@@ -112,23 +112,23 @@ export interface AuthResponse {
     apiKey?: string;
 }
 
-// EVENTOS DE WEBHOOK (Types)
+// WEBHOOK EVENTS (Types)
 
 /**
- * Evento de Recuperação de Receita (Carrinho Abandonado, Pix Gerado, etc.)
+ * Revenue Recovery Event (Abandoned Cart, Pix Generated, etc.)
  */
 export interface RevenueRecoveryWebhookEvent {
     event: 'cart.abandoned' | 'payment.failed' | 'pix.created' | 'boleto.due';
     name?: string;
     phone: string;
     total?: number;
-    checkout_url: string;
+    checkout_url?: string;
     minutes_without_payment?: number;
     pix_qr_code?: string;
 }
 
 /**
- * Evento do Gateway de Pagamento (AbacatePay)
+ * Payment Gateway Event (AbacatePay)
  */
 export interface AbacatePayWebhookEvent {
     event: 'billing.paid';
@@ -148,18 +148,18 @@ export interface AbacatePayWebhookEvent {
 }
 
 /**
- * Evento de mudança de status da Mensagem (Enviado, Entregue, Lido...)
+ * Message Status Change Event (Sent, Delivered, Read...)
  */
 export interface MessageStatusWebhookEvent {
     MessageSid: string;
     MessageStatus: 'queued' | 'processing' | 'sent' | 'delivered' | 'read' | 'failed' | 'canceled';
     From: string;
     To: string;
-    MessageId: string;
-    Timestamp: string;
+    MessageId?: string;
+    Timestamp?: string;
 }
 
 /**
- * Union type para tipar o body de qualquer webhook recebido da Arara
+ * Union type for typing the body of any webhook received from Arara
  */
 export type AraraWebhookEvent = RevenueRecoveryWebhookEvent | AbacatePayWebhookEvent | MessageStatusWebhookEvent;

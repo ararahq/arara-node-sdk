@@ -104,6 +104,9 @@ Gerenciamento programático de chaves de acesso.
 // Criar nova chave
 const newKey = await sdk.apiKeys.create('LIVE');
 console.log(`Nova chave gerada: ${newKey.plainTextKey}`);
+// Atenção: NÃO faça log da chave em texto plano.
+// Em vez disso, armazene `newKey.plainTextKey` em um local seguro,
+// como um gerenciador de segredos, ou exiba-a uma única vez em uma UI segura.
 ```
 
 ### 7. Tipagem de Webhooks (Eventos de Entrada)
@@ -111,24 +114,55 @@ console.log(`Nova chave gerada: ${newKey.plainTextKey}`);
 O SDK exporta tipos para ajudar você a processar os webhooks que sua aplicação recebe da Arara (ex: Recuperação de Carrinho, Status de Mensagem).
 
 ```typescript
-import { AraraWebhookEvent } from 'ararahq';
+import { AraraWebhookEvent, WebhookUtils } from 'ararahq';
 import express from 'express';
+import crypto from 'crypto';
 
 const app = express();
 
-app.post('/webhook/arara', (req, res) => {
-  const event = req.body as AraraWebhookEvent;
+// Use o corpo bruto para validar a assinatura do webhook
+app.post(
+  '/webhook/arara',
+  express.raw({ type: 'application/json' }),
+  (req, res) => {
+    const signatureHeader = req.header('x-arara-signature');
+    const webhookSecret = process.env.ARARA_WEBHOOK_SECRET || 'SEU_WEBHOOK_SECRET_AQUI';
 
-  if (event.event === 'cart.abandoned') {
-    console.log(`Carrinho abandonado por: ${event.phone}, Valor: ${event.total}`);
+    if (!signatureHeader) {
+      return res.status(400).send('Assinatura do webhook ausente');
+    }
+
+    // Calcula o HMAC do corpo bruto usando o segredo compartilhado
+    const expectedSignature = crypto
+      .createHmac('sha256', webhookSecret)
+      .update(req.body)
+      .digest('hex');
+
+    const providedSig = Buffer.from(signatureHeader, 'hex');
+    const expectedSig = Buffer.from(expectedSignature, 'hex');
+
+    // Previne ataques de timing
+    if (
+      providedSig.length !== expectedSig.length ||
+      !crypto.timingSafeEqual(providedSig, expectedSig)
+    ) {
+      return res.status(401).send('Assinatura inválida');
+    }
+
+    // Confia no payload apenas após validação da assinatura
+    const event = JSON.parse(req.body.toString('utf8')) as AraraWebhookEvent;
+
+    if (WebhookUtils.isRevenueRecoveryEvent(event) && event.event === 'cart.abandoned') {
+        console.log(`Carrinho abandonado por: ${event.phone}, Valor: ${event.total}`);
+    }
+
+    if (WebhookUtils.isAbacatePayEvent(event)) {
+         console.log(`Pagamento confirmado! ID: ${event.data.billing?.id}`);
+    }
+
+    res.sendStatus(200);
   }
-
-  if (event.event === 'billing.paid') {
-     console.log(`Pagamento confirmado! ID: ${event.data.billing.id}`);
-  }
-
-  res.sendStatus(200);
-});
+);
 ```
 
 ## Tratamento de Erros
@@ -149,4 +183,4 @@ try {
 
 ## Licença
 
-ISC
+MIT

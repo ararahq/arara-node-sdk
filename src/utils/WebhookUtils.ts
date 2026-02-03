@@ -2,7 +2,7 @@ import { AraraWebhookEvent, RevenueRecoveryWebhookEvent, AbacatePayWebhookEvent,
 
 export class WebhookUtils {
     /**
-     * Verifica se o payload é um evento de Recuperação de Receita (ex: Carrinho Abandonado)
+     * Checks if the payload is a Revenue Recovery event (e.g. Abandoned Cart)
      */
     static isRevenueRecoveryEvent(payload: any): payload is RevenueRecoveryWebhookEvent {
         return (
@@ -13,7 +13,7 @@ export class WebhookUtils {
     }
 
     /**
-     * Verifica se o payload é um evento do AbacatePay
+     * Checks if the payload is an AbacatePay event
      */
     static isAbacatePayEvent(payload: any): payload is AbacatePayWebhookEvent {
         return (
@@ -24,7 +24,7 @@ export class WebhookUtils {
     }
 
     /**
-     * Verifica se o payload é um evento de Status de Mensagem
+     * Checks if the payload is a Message Status event
      */
     static isMessageStatusEvent(payload: any): payload is MessageStatusWebhookEvent {
         return (
@@ -36,7 +36,7 @@ export class WebhookUtils {
     }
 
     /**
-     * Tenta identificar o tipo do evento ou retorna null se desconhecido
+     * Attempts to identify the event type or returns null if unknown
      */
     static parseEvent(payload: any): AraraWebhookEvent | null {
         if (this.isRevenueRecoveryEvent(payload)) return payload;

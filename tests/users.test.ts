@@ -19,7 +19,7 @@ describe('Users Resource', () => {
 
     it('should get current user info', async () => {
         const mockResponse = {
-            data: { name: 'Use', email: 't@t.com', phoneNumber: '5588' }
+            data: { name: 'User', email: 't@t.com', phoneNumber: '5588' }
         };
 
         const mockGet = jest.fn().mockResolvedValue(mockResponse);
