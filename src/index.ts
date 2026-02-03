@@ -1,6 +1,6 @@
 import axios, { AxiosInstance } from 'axios';
 import { SDKConfig } from './types';
-import { Auth } from './resources/Auth';
+
 import { Users } from './resources/Users';
 import { Messages } from './resources/Messages';
 import { Templates } from './resources/Templates';
@@ -21,7 +21,7 @@ export {
     WebhookUpdateResponse,
     ApiKey,
     GeneratedApiKey,
-    AuthResponse,
+
     RevenueRecoveryWebhookEvent,
     AbacatePayWebhookEvent,
     MessageStatusWebhookEvent,
@@ -31,7 +31,7 @@ export {
 export class NodeSDK {
     private client: AxiosInstance;
 
-    public auth: Auth;
+
     public users: Users;
     public messages: Messages;
     public templates: Templates;
@@ -53,11 +53,11 @@ export class NodeSDK {
 
         this.client = axios.create({
             baseURL: config.baseUrl,
-            timeout: config.timeout || 10000,
+            timeout: config.timeout ?? 10000,
             headers
         });
 
-        this.auth = new Auth(this.client);
+
         this.users = new Users(this.client);
         this.messages = new Messages(this.client);
         this.templates = new Templates(this.client);

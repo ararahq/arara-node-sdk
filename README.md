@@ -29,17 +29,9 @@ const sdk = new NodeSDK({
 
 O SDK é dividido em módulos para facilitar o uso:
 
-### 1. Autenticação (`sdk.auth`)
 
-Gerenciamento de sessão e login.
 
-```typescript
-// Login via Firebase Token
-const auth = await sdk.auth.loginWithFirebase('firebase-token-jwt');
-console.log(auth.token);
-```
-
-### 2. Usuários (`sdk.users`)
+### 1. Usuários (`sdk.users`)
 
 Gerenciamento do perfil do usuário autenticado.
 
@@ -54,7 +46,7 @@ const updated = await sdk.users.update({
 });
 ```
 
-### 3. Mensagens (`sdk.messages`)
+### 2. Mensagens (`sdk.messages`)
 
 Envio de mensagens via WhatsApp (integrado com Twilio/Providers).
 
@@ -69,7 +61,7 @@ const response = await sdk.messages.send({
 console.log(`Mensagem enviada! Status: ${response.status}`);
 ```
 
-### 4. Templates (`sdk.templates`)
+### 3. Templates (`sdk.templates`)
 
 Gestão e consulta de templates de mensagens.
 
@@ -81,7 +73,7 @@ const templates = await sdk.templates.list();
 const details = await sdk.templates.get('id-do-template');
 ```
 
-### 5. Organização e Webhooks (`sdk.organizations`)
+### 4. Organização e Webhooks (`sdk.organizations`)
 
 Configuração de preferências da organização, como Webhooks para eventos de entrada.
 
@@ -96,7 +88,7 @@ await sdk.organizations.updateWebhook({
 });
 ```
 
-### 6. Chaves de API (`sdk.apiKeys`)
+### 5. Chaves de API (`sdk.apiKeys`)
 
 Gerenciamento programático de chaves de acesso.
 
@@ -109,7 +101,7 @@ console.log(`Nova chave gerada: ${newKey.plainTextKey}`);
 // como um gerenciador de segredos, ou exiba-a uma única vez em uma UI segura.
 ```
 
-### 7. Tipagem de Webhooks (Eventos de Entrada)
+### 6. Tipagem de Webhooks (Eventos de Entrada)
 
 O SDK exporta tipos para ajudar você a processar os webhooks que sua aplicação recebe da Arara (ex: Recuperação de Carrinho, Status de Mensagem).
 

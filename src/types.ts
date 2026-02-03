@@ -102,15 +102,7 @@ export interface GeneratedApiKey {
     createdAt: string;
 }
 
-// AUTH
 
-export interface AuthResponse {
-    user: User;
-    token: string;
-    userId?: string;
-    isAuthenticated: boolean;
-    apiKey?: string;
-}
 
 // WEBHOOK EVENTS (Types)
 

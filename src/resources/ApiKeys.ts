@@ -16,8 +16,9 @@ export class ApiKeys extends BaseResource {
      * POST /api-keys
      */
     async create(mode: 'LIVE' | 'TEST' = 'LIVE'): Promise<GeneratedApiKey> {
-        // Envia como query param conforme controller
-        const response = await this.client.post<GeneratedApiKey>(`/api-keys?mode=${mode}`);
+        const response = await this.client.post<GeneratedApiKey>('/api-keys', null, {
+            params: { mode }
+        });
         return response.data;
     }
 }
