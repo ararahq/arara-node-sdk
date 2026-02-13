@@ -30,27 +30,38 @@ export interface SendMessageRequest {
 }
 
 export interface MessageResponse {
+    id: string; // Public ID (ara_msg_...)
     status: string;
     mode: string;
     sender: string;
     receiver: string;
+    createdAt?: string;
 }
 
 // TEMPLATES
 
 export interface Template {
-    id: string;
+    id: string; // ara_tmp_...
     name: string;
     formattedName: string;
-    category: string;
+    category: 'UTILITY' | 'MARKETING' | 'AUTHENTICATION';
     language: string;
-    providerName: string;
-    providerTemplateId: string;
+    body: string;
+    samples?: string[];
+    buttonsConfig?: any[];
     providerStatus: string;
     rejectionReason?: string | null;
-    bodyPreview?: string | null;
     createdAt: string;
     updatedAt?: string | null;
+}
+
+export interface CreateTemplateRequest {
+    name: string;
+    category: 'UTILITY' | 'MARKETING' | 'AUTHENTICATION';
+    language: string;
+    body: string;
+    samples?: string[];
+    buttonsConfig?: any[];
 }
 
 export interface TemplateResponse {
@@ -104,13 +115,19 @@ export interface GeneratedApiKey {
 
 
 
-// WEBHOOK EVENTS (Types)
+// WEBHOOK EVENTS (Universal Envelope v2)
+
+export interface AraraWebhookEnvelope<T> {
+    event: string;
+    data: T;
+    timestamp: string;
+    organizationId: string;
+}
 
 /**
  * Revenue Recovery Event (Abandoned Cart, Pix Generated, etc.)
  */
-export interface RevenueRecoveryWebhookEvent {
-    event: 'cart.abandoned' | 'payment.failed' | 'pix.created' | 'boleto.due';
+export interface RevenueRecoveryData {
     name?: string;
     phone: string;
     total?: number;
@@ -120,38 +137,34 @@ export interface RevenueRecoveryWebhookEvent {
 }
 
 /**
- * Payment Gateway Event (AbacatePay)
+ * Message Status Change Event (Sent, Delivered, Read...)
  */
-export interface AbacatePayWebhookEvent {
-    event: 'billing.paid';
-    data: {
-        id?: string;
-        billing?: {
-            id: string;
-            amount: number;
-            status: string;
-            customer?: {
-                id?: string;
-                metadata?: Record<string, any>;
-            };
-            metadata?: Record<string, any>;
-        };
-    };
+export interface MessageStatusData {
+    messageId: string; // ara_msg_...
+    status: 'queued' | 'processing' | 'sent' | 'delivered' | 'read' | 'failed' | 'canceled';
+    receiver: string;
+    sender: string;
+    errorDetails?: any;
 }
 
 /**
- * Message Status Change Event (Sent, Delivered, Read...)
+ * Inbound Message Event
  */
-export interface MessageStatusWebhookEvent {
-    MessageSid: string;
-    MessageStatus: 'queued' | 'processing' | 'sent' | 'delivered' | 'read' | 'failed' | 'canceled';
-    From: string;
-    To: string;
-    MessageId?: string;
-    Timestamp?: string;
+export interface InboundMessageData {
+    from: string;
+    to: string;
+    body: string;
+    type: 'text' | 'media';
+    media_url?: string;
+    sender_name?: string;
 }
+
+export type RevenueRecoveryWebhookEvent = AraraWebhookEnvelope<RevenueRecoveryData>;
+export type MessageStatusWebhookEvent = AraraWebhookEnvelope<MessageStatusData>;
+export type InboundMessageWebhookEvent = AraraWebhookEnvelope<InboundMessageData>;
+export type AbacatePayWebhookEvent = AraraWebhookEnvelope<any>; // Fallback para AbacatePay
 
 /**
  * Union type for typing the body of any webhook received from Arara
  */
-export type AraraWebhookEvent = RevenueRecoveryWebhookEvent | AbacatePayWebhookEvent | MessageStatusWebhookEvent;
+export type AraraWebhookEvent = RevenueRecoveryWebhookEvent | MessageStatusWebhookEvent | InboundMessageWebhookEvent | AbacatePayWebhookEvent;

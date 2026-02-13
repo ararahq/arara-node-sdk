@@ -1,178 +1,117 @@
 # Arara Node SDK
 
-O SDK oficial para integração com a plataforma **AraraHQ**. Este pacote fornece uma interface simples e tipada para interagir com todos os recursos da API.
+Official Node.js SDK for **AraraHQ**. Simple, typed, and developer-first.
 
-## Instalação
+## Installation
 
 ```bash
-npm install ararahq
-# ou
-yarn add ararahq
-# ou
-pnpm add ararahq
+npm install @ararahq/sdk
 ```
 
-## Configuração
-
-Importe e inicialize o SDK com sua chave de API (obtida no painel administrativo).
+## Configuration
 
 ```typescript
-import { NodeSDK } from 'ararahq';
+import { NodeSDK } from '@ararahq/sdk';
 
 const sdk = new NodeSDK({
-  baseUrl: 'https://api.ararahq.com/api', // ou sua URL da API
+  baseUrl: 'https://api.ararahq.com/api',
   apiKey: 'sk_live_...'
 });
 ```
 
-## Recursos Disponíveis
+## Resources
 
-O SDK é dividido em módulos para facilitar o uso:
-
-
-
-### 1. Usuários (`sdk.users`)
-
-Gerenciamento do perfil do usuário autenticado.
+### 1. Users (`sdk.users`)
 
 ```typescript
-// Obter dados do usuário atual
 const user = await sdk.users.getMe();
 
-// Atualizar perfil
 const updated = await sdk.users.update({
-  name: "Novo Nome",
+  name: "New Name",
   phoneNumber: "+5511999998888"
 });
 ```
 
-### 2. Mensagens (`sdk.messages`)
-
-Envio de mensagens via WhatsApp (integrado com Twilio/Providers).
+### 2. Messages (`sdk.messages`)
 
 ```typescript
-// Enviar mensagem de template
 const response = await sdk.messages.send({
   receiver: "whatsapp:+5511999998888",
-  templateName: "boas_vindas",
-  variables: ["João"]
+  templateName: "welcome",
+  variables: ["John"]
 });
-
-console.log(`Mensagem enviada! Status: ${response.status}`);
 ```
 
 ### 3. Templates (`sdk.templates`)
 
-Gestão e consulta de templates de mensagens.
-
 ```typescript
-// Listar templates
 const templates = await sdk.templates.list();
 
-// Detalhes de um template
-const details = await sdk.templates.get('id-do-template');
+const details = await sdk.templates.get('template-name');
+
+await sdk.templates.create({
+  name: "promo_christmas",
+  category: "MARKETING",
+  language: "pt_BR",
+  body: "Hi {{1}}, check our Christmas deals!",
+  samples: ["John"]
+});
+
+await sdk.templates.delete('template-name');
 ```
 
-### 4. Organização e Webhooks (`sdk.organizations`)
-
-Configuração de preferências da organização, como Webhooks para eventos de entrada.
+### 4. Organization & Webhooks (`sdk.organizations`)
 
 ```typescript
-// Consultar configuração atual
 const config = await sdk.organizations.getWebhook();
 
-// Atualizar URL de Webhook
 await sdk.organizations.updateWebhook({
-  url: "https://minha-api.com/webhook",
-  secret: "meu-secret-seguro"
+  url: "https://your-api.com/webhook",
+  secret: "secure-secret"
 });
 ```
 
-### 5. Chaves de API (`sdk.apiKeys`)
-
-Gerenciamento programático de chaves de acesso.
+### 5. API Keys (`sdk.apiKeys`)
 
 ```typescript
-// Criar nova chave
 const newKey = await sdk.apiKeys.create('LIVE');
-console.log(`Nova chave gerada: ${newKey.plainTextKey}`);
-// Atenção: NÃO faça log da chave em texto plano.
-// Em vez disso, armazene `newKey.plainTextKey` em um local seguro,
-// como um gerenciador de segredos, ou exiba-a uma única vez em uma UI segura.
 ```
 
-### 6. Tipagem de Webhooks (Eventos de Entrada)
-
-O SDK exporta tipos para ajudar você a processar os webhooks que sua aplicação recebe da Arara (ex: Recuperação de Carrinho, Status de Mensagem).
+### 6. Webhook Events
 
 ```typescript
-import { AraraWebhookEvent, WebhookUtils } from 'ararahq';
+import { AraraWebhookEvent, WebhookUtils } from '@ararahq/sdk';
 import express from 'express';
-import crypto from 'crypto';
 
 const app = express();
 
-// Use o corpo bruto para validar a assinatura do webhook
-app.post(
-  '/webhook/arara',
-  express.raw({ type: 'application/json' }),
-  (req, res) => {
-    const signatureHeader = req.header('x-arara-signature');
-    const webhookSecret = process.env.ARARA_WEBHOOK_SECRET || 'SEU_WEBHOOK_SECRET_AQUI';
+app.post('/webhook/arara', express.json(), (req, res) => {
+    const event = req.body as AraraWebhookEvent;
 
-    if (!signatureHeader) {
-      return res.status(400).send('Assinatura do webhook ausente');
+    if (WebhookUtils.isMessageStatusEvent(event)) {
+        const { messageId, status, receiver } = event.data;
+        console.log(`Message ${messageId} to ${receiver}: ${status}`);
     }
 
-    // Calcula o HMAC do corpo bruto usando o segredo compartilhado
-    const expectedSignature = crypto
-      .createHmac('sha256', webhookSecret)
-      .update(req.body)
-      .digest('hex');
-
-    const providedSig = Buffer.from(signatureHeader, 'hex');
-    const expectedSig = Buffer.from(expectedSignature, 'hex');
-
-    // Previne ataques de timing
-    if (
-      providedSig.length !== expectedSig.length ||
-      !crypto.timingSafeEqual(providedSig, expectedSig)
-    ) {
-      return res.status(401).send('Assinatura inválida');
-    }
-
-    // Confia no payload apenas após validação da assinatura
-    const event = JSON.parse(req.body.toString('utf8')) as AraraWebhookEvent;
-
-    if (WebhookUtils.isRevenueRecoveryEvent(event) && event.event === 'cart.abandoned') {
-        console.log(`Carrinho abandonado por: ${event.phone}, Valor: ${event.total}`);
-    }
-
-    if (WebhookUtils.isAbacatePayEvent(event)) {
-         console.log(`Pagamento confirmado! ID: ${event.data.billing?.id}`);
+    if (WebhookUtils.isInboundMessageEvent(event)) {
+        const { from, body } = event.data;
+        console.log(`New message from ${from}: ${body}`);
     }
 
     res.sendStatus(200);
-  }
-);
+});
 ```
 
-## Tratamento de Erros
-
-O SDK utiliza `axios` internamente. Erros de API retornarão exceções que podem ser tratadas via `try/catch`.
+## Error Handling
 
 ```typescript
 try {
   await sdk.users.getMe();
 } catch (error: any) {
-  if (error.response?.status === 403) {
-    console.error("Acesso negado: Verifique sua API Key.");
-  } else {
-    console.error("Erro desconhecido:", error.message);
-  }
+  console.error(error.response?.status, error.message);
 }
 ```
 
-## Licença
+## License
 
 MIT
