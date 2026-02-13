@@ -1,65 +1,178 @@
-# [Nome do SDK] - Arara SDK
+# Arara Node SDK
 
-Este repositório contém o SDK oficial da Arara para **[Linguagem/Plataforma]**.
+O SDK oficial para integração com a plataforma **AraraHQ**. Este pacote fornece uma interface simples e tipada para interagir com todos os recursos da API.
 
-> **Nota para o mantenedor:** Este é um template base. Ao usar este repositório, substitua as informações entre colchetes `[...]` pelas informações específicas do seu projeto.
+## Instalação
 
-## 📋 Sobre
-
-Descreva brevemente o que este SDK faz e quais serviços da Arara ele cobre.
-
-## 🚀 Instalação
-
-Instruções de como instalar o SDK na linguagem específica.
-
-Exemplo genérico:
 ```bash
-# Comando de instalação
-install-command [package-name]
+npm install ararahq
+# ou
+yarn add ararahq
+# ou
+pnpm add ararahq
 ```
 
-## ⚡ Começando
+## Configuração
 
-Exemplo rápido de "Hello World" ou uso básico da biblioteca.
+Importe e inicialize o SDK com sua chave de API (obtida no painel administrativo).
 
-```[linguagem]
-// Insira aqui um exemplo de código
-initialize(apiKey);
-doSomething();
+```typescript
+import { NodeSDK } from 'ararahq';
+
+const sdk = new NodeSDK({
+  baseUrl: 'https://api.ararahq.com/api', // ou sua URL da API
+  apiKey: 'sk_live_...'
+});
 ```
 
-## 📂 Estrutura do Projeto
+## Recursos Disponíveis
 
-Explique brevemente como o código está organizado.
+O SDK é dividido em módulos para facilitar o uso:
 
-*   `src/` ou `lib/`: Código fonte.
-*   `tests/`: Testes automatizados.
-*   `docs/`: Documentação adicional.
-*   `examples/`: Projetos de exemplo.
 
-## 🤝 Como Contribuir
 
-Agradecemos o interesse em contribuir com o ecossistema Arara! Este projeto segue um fluxo de contribuição padrão para garantir a qualidade e consistência.
+### 1. Usuários (`sdk.users`)
 
-### Fluxo de Trabalho (Workflow)
+Gerenciamento do perfil do usuário autenticado.
 
-1.  **Fork** este repositório para a sua conta pessoal ou organização.
-2.  Crie uma **Branch** para a sua feature ou correção:
-    *   Use nomes descritivos, ex: `feat/nova-autenticacao`, `fix/erro-timeout`.
-3.  Faça suas alterações e **Commits**:
-    *   Escreva mensagens de commit claras e concisas (preferencialmente em inglês ou português, seguindo o padrão do projeto).
-4.  Faça o **Push** para o seu fork.
-5.  Abra um **Pull Request (PR)** para o repositório principal:
-    *   Descreva detalhadamente o que foi feito.
-    *   Linke issues relacionadas, se houver.
-    *   Aguarde a revisão da equipe.
+```typescript
+// Obter dados do usuário atual
+const user = await sdk.users.getMe();
 
-### Padrões de Código
+// Atualizar perfil
+const updated = await sdk.users.update({
+  name: "Novo Nome",
+  phoneNumber: "+5511999998888"
+});
+```
 
-*   Siga as convenções de estilo da linguagem (ex: PEP8 para Python, StandardJS para JS/TS, Go Fmt para Go).
-*   Mantenha a cobertura de testes. Se adicionar uma nova funcionalidade, adicione testes para ela.
-*   Documente métodos e classes públicas.
+### 2. Mensagens (`sdk.messages`)
 
-## 📄 Licença
+Envio de mensagens via WhatsApp (integrado com Twilio/Providers).
 
-Este projeto está licenciado sob a [Licença MIT](LICENSE).
+```typescript
+// Enviar mensagem de template
+const response = await sdk.messages.send({
+  receiver: "whatsapp:+5511999998888",
+  templateName: "boas_vindas",
+  variables: ["João"]
+});
+
+console.log(`Mensagem enviada! Status: ${response.status}`);
+```
+
+### 3. Templates (`sdk.templates`)
+
+Gestão e consulta de templates de mensagens.
+
+```typescript
+// Listar templates
+const templates = await sdk.templates.list();
+
+// Detalhes de um template
+const details = await sdk.templates.get('id-do-template');
+```
+
+### 4. Organização e Webhooks (`sdk.organizations`)
+
+Configuração de preferências da organização, como Webhooks para eventos de entrada.
+
+```typescript
+// Consultar configuração atual
+const config = await sdk.organizations.getWebhook();
+
+// Atualizar URL de Webhook
+await sdk.organizations.updateWebhook({
+  url: "https://minha-api.com/webhook",
+  secret: "meu-secret-seguro"
+});
+```
+
+### 5. Chaves de API (`sdk.apiKeys`)
+
+Gerenciamento programático de chaves de acesso.
+
+```typescript
+// Criar nova chave
+const newKey = await sdk.apiKeys.create('LIVE');
+console.log(`Nova chave gerada: ${newKey.plainTextKey}`);
+// Atenção: NÃO faça log da chave em texto plano.
+// Em vez disso, armazene `newKey.plainTextKey` em um local seguro,
+// como um gerenciador de segredos, ou exiba-a uma única vez em uma UI segura.
+```
+
+### 6. Tipagem de Webhooks (Eventos de Entrada)
+
+O SDK exporta tipos para ajudar você a processar os webhooks que sua aplicação recebe da Arara (ex: Recuperação de Carrinho, Status de Mensagem).
+
+```typescript
+import { AraraWebhookEvent, WebhookUtils } from 'ararahq';
+import express from 'express';
+import crypto from 'crypto';
+
+const app = express();
+
+// Use o corpo bruto para validar a assinatura do webhook
+app.post(
+  '/webhook/arara',
+  express.raw({ type: 'application/json' }),
+  (req, res) => {
+    const signatureHeader = req.header('x-arara-signature');
+    const webhookSecret = process.env.ARARA_WEBHOOK_SECRET || 'SEU_WEBHOOK_SECRET_AQUI';
+
+    if (!signatureHeader) {
+      return res.status(400).send('Assinatura do webhook ausente');
+    }
+
+    // Calcula o HMAC do corpo bruto usando o segredo compartilhado
+    const expectedSignature = crypto
+      .createHmac('sha256', webhookSecret)
+      .update(req.body)
+      .digest('hex');
+
+    const providedSig = Buffer.from(signatureHeader, 'hex');
+    const expectedSig = Buffer.from(expectedSignature, 'hex');
+
+    // Previne ataques de timing
+    if (
+      providedSig.length !== expectedSig.length ||
+      !crypto.timingSafeEqual(providedSig, expectedSig)
+    ) {
+      return res.status(401).send('Assinatura inválida');
+    }
+
+    // Confia no payload apenas após validação da assinatura
+    const event = JSON.parse(req.body.toString('utf8')) as AraraWebhookEvent;
+
+    if (WebhookUtils.isRevenueRecoveryEvent(event) && event.event === 'cart.abandoned') {
+        console.log(`Carrinho abandonado por: ${event.phone}, Valor: ${event.total}`);
+    }
+
+    if (WebhookUtils.isAbacatePayEvent(event)) {
+         console.log(`Pagamento confirmado! ID: ${event.data.billing?.id}`);
+    }
+
+    res.sendStatus(200);
+  }
+);
+```
+
+## Tratamento de Erros
+
+O SDK utiliza `axios` internamente. Erros de API retornarão exceções que podem ser tratadas via `try/catch`.
+
+```typescript
+try {
+  await sdk.users.getMe();
+} catch (error: any) {
+  if (error.response?.status === 403) {
+    console.error("Acesso negado: Verifique sua API Key.");
+  } else {
+    console.error("Erro desconhecido:", error.message);
+  }
+}
+```
+
+## Licença
+
+MIT

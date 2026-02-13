@@ -1,0 +1,50 @@
+{
+  "name": "ararahq",
+  "version": "1.0.0",
+  "description": "Este repositório contém o SDK oficial da Arara para Node.js.",
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "test": "jest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ararahq/arara-node-sdk.git"
+  },
+  "keywords": [
+    "arara",
+    "whatsapp",
+    "sdk",
+    "messaging",
+    "api",
+    "typescript"
+  ],
+  "author": "Arara HQ",
+  "license": "MIT",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/ararahq/arara-node-sdk/issues"
+  },
+  "homepage": "https://github.com/ararahq/arara-node-sdk#readme",
+  "devDependencies": {
+    "@types/jest": "^30.0.0",
+    "@types/node": "^25.0.7",
+    "jest": "^30.2.0",
+    "ts-jest": "^29.4.6",
+    "ts-node": "^10.9.2",
+    "tsup": "^8.5.1",
+    "typescript": "^5.9.3"
+  },
+  "dependencies": {
+    "axios": "^1.13.2"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE",
+    "package.json"
+  ]
+}
