@@ -24,8 +24,11 @@ export interface UpdateUserRequest {
 
 export interface SendMessageRequest {
     receiver: string;
-    templateName: string;
-    variables?: string[];
+    templateName?: string;
+    templateVariables?: string[];
+    variables?: string[]; // Alias for templateVariables
+    body?: string;
+    media_url?: string;
     scheduled_at?: string;
 }
 
@@ -60,8 +63,20 @@ export interface CreateTemplateRequest {
     category: 'UTILITY' | 'MARKETING' | 'AUTHENTICATION';
     language: string;
     body: string;
-    samples?: string[];
-    buttonsConfig?: any[];
+    header?: string;
+    headerType?: 'text' | 'media' | 'document';
+    footer?: string;
+    buttons?: TemplateButton[];
+    samples?: Record<string, string>;
+    variableExamples?: string[]; // Legacy
+}
+
+export interface TemplateButton {
+    type: 'QUICK_REPLY' | 'PHONE_NUMBER' | 'URL' | 'SMART_LINK' | 'COPY_CODE';
+    text: string;
+    url?: string;
+    phone?: string;
+    extraConfig?: Record<string, any>;
 }
 
 export interface TemplateResponse {

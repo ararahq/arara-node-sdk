@@ -35,10 +35,25 @@ const updated = await sdk.users.update({
 ### 2. Messages (`sdk.messages`)
 
 ```typescript
+// Template standard
 const response = await sdk.messages.send({
   receiver: "whatsapp:+5511999998888",
   templateName: "welcome",
   variables: ["John"]
+});
+
+// Template com Mídia (Header de Imagem/PDF)
+const mediaResponse = await sdk.messages.send({
+  receiver: "whatsapp:+5511999998888",
+  templateName: "invoice_ready",
+  variables: ["John", "January"],
+  media_url: "https://your-media.com/invoice.pdf"
+});
+
+// Mensagem de Sessão (Texto Livre)
+const sessionResponse = await sdk.messages.send({
+  receiver: "whatsapp:+5511999998888",
+  body: "Olá! Como posso ajudar?"
 });
 ```
 
