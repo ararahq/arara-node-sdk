@@ -28,7 +28,7 @@ describe('ApiKeys Resource', () => {
         sdk = new NodeSDK(config);
 
         const result = await sdk.apiKeys.list();
-        expect(mockGet).toHaveBeenCalledWith('/api-keys');
+        expect(mockGet).toHaveBeenCalledWith('/v1/api-keys');
         expect(result).toEqual(mockResponse.data);
     });
 
@@ -44,7 +44,7 @@ describe('ApiKeys Resource', () => {
         sdk = new NodeSDK(config);
 
         const result = await sdk.apiKeys.create('LIVE');
-        expect(mockPost).toHaveBeenCalledWith('/api-keys', null, { params: { mode: 'LIVE' } });
+        expect(mockPost).toHaveBeenCalledWith('/v1/api-keys', null, { params: { mode: 'LIVE' } });
         expect(result).toEqual(mockResponse.data);
     });
 });

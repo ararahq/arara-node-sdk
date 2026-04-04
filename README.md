@@ -1,6 +1,11 @@
 # Arara Node SDK
 
-Official Node.js SDK for **AraraHQ**. Simple, typed, and developer-first.
+[![npm](https://img.shields.io/npm/v/@ararahq/sdk)](https://www.npmjs.com/package/@ararahq/sdk)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.x-blue)](https://www.typescriptlang.org/)
+[![License](https://img.shields.io/badge/License-MIT-green)](LICENSE)
+[![Docs](https://img.shields.io/badge/Docs-docs.ararahq.com-orange)](https://docs.ararahq.com)
+
+Official Node.js SDK for **[AraraHQ](https://ararahq.com)** — the developer-first WhatsApp API. Simple, typed, and built for scale.
 
 ## Installation
 
