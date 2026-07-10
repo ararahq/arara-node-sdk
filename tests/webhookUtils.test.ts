@@ -1,36 +1,53 @@
 import { WebhookUtils } from '../src/utils/WebhookUtils';
 
 describe('WebhookUtils', () => {
+    const envelope = {
+        timestamp: '2026-07-10T10:00:00Z',
+        organizationId: 'ara_org_123'
+    };
+
     it('should identify revenue recovery events', () => {
-        const payload = { event: 'cart.abandoned', phone: '123', checkout_url: 'https://example.com/checkout' };
+        const payload = {
+            ...envelope,
+            event: 'cart.abandoned',
+            data: { phone: '+5511999998888', checkout_url: 'https://example.com/checkout' }
+        };
         expect(WebhookUtils.isRevenueRecoveryEvent(payload)).toBe(true);
         expect(WebhookUtils.parseEvent(payload)).toEqual(payload);
     });
 
-    it('should identify abacate pay events', () => {
+    it('should identify message status events', () => {
         const payload = {
-            event: 'billing.paid',
+            ...envelope,
+            event: 'message.status_updated',
             data: {
-                id: '1',
-                billing: {
-                    id: 'bill_123',
-                    amount: 1000,
-                    status: 'paid'
-                }
+                messageId: 'ara_msg_123',
+                status: 'delivered',
+                receiver: '+5511999998888',
+                sender: '+5511888887777'
             }
         };
-        expect(WebhookUtils.isAbacatePayEvent(payload)).toBe(true);
-        expect(WebhookUtils.parseEvent(payload)).toEqual(payload);
-    });
-
-    it('should identify message status events', () => {
-        const payload = { MessageSid: '123', MessageStatus: 'sent', From: '1', To: '2', MessageId: 'msg_123', Timestamp: '2024-03-20T10:00:00Z' };
         expect(WebhookUtils.isMessageStatusEvent(payload)).toBe(true);
         expect(WebhookUtils.parseEvent(payload)).toEqual(payload);
     });
 
+    it('should identify inbound message events', () => {
+        const payload = {
+            ...envelope,
+            event: 'message.received',
+            data: {
+                from: '+5511999998888',
+                to: '+5511888887777',
+                body: 'Oi',
+                type: 'text'
+            }
+        };
+        expect(WebhookUtils.isInboundMessageEvent(payload)).toBe(true);
+        expect(WebhookUtils.parseEvent(payload)).toEqual(payload);
+    });
+
     it('should return null for unknown events', () => {
-        const payload = { event: 'unknown' };
+        const payload = { ...envelope, event: 'unknown', data: {} };
         expect(WebhookUtils.parseEvent(payload)).toBeNull();
     });
 });
