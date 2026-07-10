@@ -6,24 +6,14 @@ const mockedAxios = axios as jest.Mocked<typeof axios>;
 
 describe('Messages Resource', () => {
     let sdk: NodeSDK;
+    let mockPost: jest.Mock;
     const config = { baseUrl: 'https://api.test', apiKey: 'sk_test_123' };
+    const mockResponse = {
+        data: { id: 'ara_msg_1', status: 'queued', mode: 'live', sender: '123', receiver: '5588' }
+    };
 
     beforeEach(() => {
-        mockedAxios.create.mockReturnThis();
-        sdk = new NodeSDK(config);
-    });
-
-    afterEach(() => {
-        jest.clearAllMocks();
-    });
-
-    it('should send a message', async () => {
-        const payload = { receiver: '5588', templateName: 'hello', variables: ['World'] };
-        const mockResponse = {
-            data: { status: 'queued', mode: 'live', sender: '123', receiver: '5588' }
-        };
-
-        const mockPost = jest.fn().mockResolvedValue(mockResponse);
+        mockPost = jest.fn().mockResolvedValue(mockResponse);
         mockedAxios.create.mockReturnValue({
             post: mockPost,
             get: jest.fn(),
@@ -31,12 +21,60 @@ describe('Messages Resource', () => {
             delete: jest.fn(),
             defaults: { headers: {} },
             interceptors: { request: { use: jest.fn() }, response: { use: jest.fn() } }
-        } as any);
-
+        } as never);
         sdk = new NodeSDK(config);
-        const result = await sdk.messages.send(payload);
+    });
 
-        expect(mockPost).toHaveBeenCalledWith('/v1/messages', payload);
+    afterEach(() => {
+        jest.clearAllMocks();
+    });
+
+    it('should map variables alias to templateVariables', async () => {
+        const result = await sdk.messages.send({
+            receiver: '5588',
+            templateName: 'hello',
+            variables: ['World']
+        });
+
+        expect(mockPost).toHaveBeenCalledWith(
+            '/v1/messages',
+            { receiver: '5588', templateName: 'hello', templateVariables: ['World'] },
+            undefined
+        );
         expect(result).toEqual(mockResponse.data);
+    });
+
+    it('should prefer templateVariables when both are provided', async () => {
+        await sdk.messages.send({
+            receiver: '5588',
+            templateName: 'hello',
+            templateVariables: ['Wins'],
+            variables: ['Loses']
+        });
+
+        expect(mockPost).toHaveBeenCalledWith(
+            '/v1/messages',
+            { receiver: '5588', templateName: 'hello', templateVariables: ['Wins'] },
+            undefined
+        );
+    });
+
+    it('should not add templateVariables when none are provided', async () => {
+        await sdk.messages.send({ receiver: '5588', body: 'Oi' });
+
+        expect(mockPost).toHaveBeenCalledWith('/v1/messages', { receiver: '5588', body: 'Oi' }, undefined);
+    });
+
+    it('should send Idempotency-Key header when idempotencyKey option is provided', async () => {
+        await sdk.messages.send(
+            { receiver: '5588', templateName: 'hello', templateVariables: ['World'] },
+            { idempotencyKey: 'key-123' }
+        );
+
+        expect(mockPost).toHaveBeenCalledWith(
+            '/v1/messages',
+            { receiver: '5588', templateName: 'hello', templateVariables: ['World'] },
+            { headers: { 'Idempotency-Key': 'key-123' } }
+        );
     });
 });
