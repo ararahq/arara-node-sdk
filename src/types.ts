@@ -1,9 +1,11 @@
 export interface SDKConfig {
     /** Arara API Key (starts with 'sk_live_' or 'sk_test_') */
     apiKey?: string;
-    /** API Base URL (default: https://api.ararahq.com/api) */
-    baseUrl: string;
+    /** API Base URL (default: https://api.ararahq.com) */
+    baseUrl?: string;
     timeout?: number;
+    /** Maximum automatic retries for network errors, 5xx and 429 responses (default: 3) */
+    maxRetries?: number;
 }
 
 // USERS (Contacts)
@@ -30,6 +32,11 @@ export interface SendMessageRequest {
     body?: string;
     media_url?: string;
     scheduled_at?: string;
+}
+
+export interface SendMessageOptions {
+    /** Sent as the Idempotency-Key header to deduplicate retried sends */
+    idempotencyKey?: string;
 }
 
 export interface MessageResponse {
