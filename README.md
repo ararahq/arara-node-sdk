@@ -19,10 +19,22 @@ npm install @ararahq/sdk
 import { NodeSDK } from '@ararahq/sdk';
 
 const sdk = new NodeSDK({
-  baseUrl: 'https://api.ararahq.com/api',
   apiKey: 'sk_live_...'
 });
 ```
+
+`baseUrl` defaults to `https://api.ararahq.com`. All options:
+
+```typescript
+const sdk = new NodeSDK({
+  apiKey: 'sk_live_...',
+  baseUrl: 'https://api.ararahq.com',
+  timeout: 10000,
+  maxRetries: 3
+});
+```
+
+The SDK automatically retries network errors, `5xx` and `429` responses with exponential backoff, honoring the `Retry-After` header when present. Set `maxRetries: 0` to disable.
 
 ## Resources
 
@@ -60,6 +72,16 @@ const sessionResponse = await sdk.messages.send({
   receiver: "whatsapp:+5511999998888",
   body: "Olá! Como posso ajudar?"
 });
+
+// Envio idempotente (deduplica retries do seu lado)
+const idempotentResponse = await sdk.messages.send(
+  {
+    receiver: "whatsapp:+5511999998888",
+    templateName: "welcome",
+    variables: ["John"]
+  },
+  { idempotencyKey: "order-8231-welcome" }
+);
 ```
 
 ### 3. Templates (`sdk.templates`)
@@ -74,7 +96,7 @@ await sdk.templates.create({
   category: "MARKETING",
   language: "pt_BR",
   body: "Hi {{1}}, check our Christmas deals!",
-  samples: ["John"]
+  samples: { "1": "John" }
 });
 
 await sdk.templates.delete('template-name');
@@ -124,13 +146,30 @@ app.post('/webhook/arara', express.json(), (req, res) => {
 
 ## Error Handling
 
+Every failed request throws a typed `AraraError` with the parsed API error envelope:
+
 ```typescript
+import { AraraError } from '@ararahq/sdk';
+
 try {
-  await sdk.users.getMe();
-} catch (error: any) {
-  console.error(error.response?.status, error.message);
+  await sdk.messages.send({ receiver: "whatsapp:+5511999998888", body: "Oi" });
+} catch (error) {
+  if (error instanceof AraraError) {
+    console.error(error.statusCode, error.code, error.message, error.details);
+    if (error.code === 'RATE_LIMITED' && error.retryAfter !== undefined) {
+      console.error(`Retry after ${error.retryAfter}s`);
+    }
+  }
 }
 ```
+
+| Property | Type | Description |
+| --- | --- | --- |
+| `statusCode` | `number \| undefined` | HTTP status. `undefined` for network errors |
+| `code` | `string` | API error code (e.g. `INSUFFICIENT_CREDITS`). `NETWORK_ERROR` when the request never got a response |
+| `message` | `string` | Human-readable message from the API |
+| `details` | `object \| undefined` | Extra context from the API |
+| `retryAfter` | `number \| undefined` | Seconds to wait, from the `Retry-After` header |
 
 ## License
 
