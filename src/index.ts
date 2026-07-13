@@ -1,5 +1,6 @@
 import axios, { AxiosInstance } from 'axios';
 import { SDKConfig } from './types';
+import { DEFAULT_MAX_RETRIES, setupInterceptors } from './http';
 
 import { Users } from './resources/Users';
 import { Messages } from './resources/Messages';
@@ -12,6 +13,7 @@ export {
     User,
     UpdateUserRequest,
     SendMessageRequest,
+    SendMessageOptions,
     MessageResponse,
     Template,
     TemplateResponse,
@@ -27,6 +29,8 @@ export {
     MessageStatusWebhookEvent,
     AraraWebhookEvent
 } from './types';
+
+const DEFAULT_BASE_URL = 'https://api.ararahq.com';
 
 export class NodeSDK {
     private client: AxiosInstance;
@@ -52,11 +56,12 @@ export class NodeSDK {
         headers['Authorization'] = `Bearer ${config.apiKey}`;
 
         this.client = axios.create({
-            baseURL: config.baseUrl,
+            baseURL: config.baseUrl ?? DEFAULT_BASE_URL,
             timeout: config.timeout ?? 10000,
             headers
         });
 
+        setupInterceptors(this.client, config.maxRetries ?? DEFAULT_MAX_RETRIES);
 
         this.users = new Users(this.client);
         this.messages = new Messages(this.client);
@@ -67,3 +72,4 @@ export class NodeSDK {
 }
 
 export { WebhookUtils } from './utils/WebhookUtils';
+export { AraraError } from './errors';
