@@ -23,12 +23,12 @@ const sdk = new NodeSDK({
 });
 ```
 
-`baseUrl` defaults to `https://api.ararahq.com/api`. All options:
+`baseUrl` defaults to `https://api.ararahq.com`. All options:
 
 ```typescript
 const sdk = new NodeSDK({
   apiKey: 'ara_live_...',
-  baseUrl: 'https://api.ararahq.com/api',
+  baseUrl: 'https://api.ararahq.com',
   timeout: 10000,
   maxRetries: 3
 });

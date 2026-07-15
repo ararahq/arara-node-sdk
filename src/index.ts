@@ -30,7 +30,7 @@ export {
     AraraWebhookEvent
 } from './types';
 
-const DEFAULT_BASE_URL = 'https://api.ararahq.com/api';
+const DEFAULT_BASE_URL = 'https://api.ararahq.com';
 
 export class NodeSDK {
     private client: AxiosInstance;
