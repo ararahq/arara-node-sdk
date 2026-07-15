@@ -19,16 +19,16 @@ npm install @ararahq/sdk
 import { NodeSDK } from '@ararahq/sdk';
 
 const sdk = new NodeSDK({
-  apiKey: 'sk_live_...'
+  apiKey: 'ara_live_...'
 });
 ```
 
-`baseUrl` defaults to `https://api.ararahq.com`. All options:
+`baseUrl` defaults to `https://api.ararahq.com/api`. All options:
 
 ```typescript
 const sdk = new NodeSDK({
-  apiKey: 'sk_live_...',
-  baseUrl: 'https://api.ararahq.com',
+  apiKey: 'ara_live_...',
+  baseUrl: 'https://api.ararahq.com/api',
   timeout: 10000,
   maxRetries: 3
 });
@@ -56,14 +56,14 @@ const updated = await sdk.users.update({
 const response = await sdk.messages.send({
   receiver: "whatsapp:+5511999998888",
   templateName: "welcome",
-  variables: ["John"]
+  templateVariables: ["John"]
 });
 
 // Template com Mídia (Header de Imagem/PDF)
 const mediaResponse = await sdk.messages.send({
   receiver: "whatsapp:+5511999998888",
   templateName: "invoice_ready",
-  variables: ["John", "January"],
+  templateVariables: ["John", "January"],
   media_url: "https://your-media.com/invoice.pdf"
 });
 
@@ -78,7 +78,7 @@ const idempotentResponse = await sdk.messages.send(
   {
     receiver: "whatsapp:+5511999998888",
     templateName: "welcome",
-    variables: ["John"]
+    templateVariables: ["John"]
   },
   { idempotencyKey: "order-8231-welcome" }
 );
@@ -166,7 +166,7 @@ try {
 | Property | Type | Description |
 | --- | --- | --- |
 | `statusCode` | `number \| undefined` | HTTP status. `undefined` for network errors |
-| `code` | `string` | API error code (e.g. `INSUFFICIENT_CREDITS`). `NETWORK_ERROR` when the request never got a response |
+| `code` | `string` | API error code (e.g. `INSUFFICIENT_FUNDS`). `NETWORK_ERROR` when the request never got a response |
 | `message` | `string` | Human-readable message from the API |
 | `details` | `object \| undefined` | Extra context from the API |
 | `retryAfter` | `number \| undefined` | Seconds to wait, from the `Retry-After` header |

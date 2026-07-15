@@ -6,7 +6,7 @@ const mockedAxios = axios as jest.Mocked<typeof axios>;
 
 describe('ApiKeys Resource', () => {
     let sdk: NodeSDK;
-    const config = { baseUrl: 'https://api.test', apiKey: 'sk_test_123' };
+    const config = { baseUrl: 'https://api.test', apiKey: 'ara_live_123' };
 
     beforeEach(() => {
         mockedAxios.create.mockReturnThis();
@@ -33,7 +33,7 @@ describe('ApiKeys Resource', () => {
     });
 
     it('should create api key', async () => {
-        const mockResponse = { data: { plainTextKey: 'sk_live_123' } };
+        const mockResponse = { data: { plainTextKey: 'ara_live_123' } };
         const mockPost = jest.fn().mockResolvedValue(mockResponse);
 
         mockedAxios.create.mockReturnValue({

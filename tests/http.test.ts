@@ -29,14 +29,14 @@ describe('toAraraError', () => {
 
     it('should parse the nested error envelope', () => {
         const error = buildAxiosError(config, 402, {
-            error: { code: 'INSUFFICIENT_CREDITS', message: 'Sem créditos', details: { balance: 0 } }
+            error: { code: 'INSUFFICIENT_FUNDS', message: 'Sem créditos', details: { balance: 0 } }
         });
 
         const result = toAraraError(error);
 
         expect(result).toBeInstanceOf(AraraError);
         expect(result.statusCode).toBe(402);
-        expect(result.code).toBe('INSUFFICIENT_CREDITS');
+        expect(result.code).toBe('INSUFFICIENT_FUNDS');
         expect(result.message).toBe('Sem créditos');
         expect(result.details).toEqual({ balance: 0 });
     });
