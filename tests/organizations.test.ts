@@ -6,7 +6,7 @@ const mockedAxios = axios as jest.Mocked<typeof axios>;
 
 describe('Organizations Resource', () => {
     let sdk: NodeSDK;
-    const config = { baseUrl: 'https://api.test', apiKey: 'sk_test_123' };
+    const config = { baseUrl: 'https://api.test', apiKey: 'ara_live_123' };
 
     beforeEach(() => {
         mockedAxios.create.mockReturnThis();

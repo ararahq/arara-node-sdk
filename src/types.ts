@@ -1,7 +1,7 @@
 export interface SDKConfig {
-    /** Arara API Key (starts with 'sk_live_' or 'sk_test_') */
+    /** Arara API Key (starts with 'ara_live_') */
     apiKey?: string;
-    /** API Base URL (default: https://api.ararahq.com) */
+    /** API Base URL (default: https://api.ararahq.com/api) */
     baseUrl?: string;
     timeout?: number;
     /** Maximum automatic retries for network errors, 5xx and 429 responses (default: 3) */

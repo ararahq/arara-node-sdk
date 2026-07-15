@@ -7,7 +7,7 @@ const mockedAxios = axios as jest.Mocked<typeof axios>;
 describe('Messages Resource', () => {
     let sdk: NodeSDK;
     let mockPost: jest.Mock;
-    const config = { baseUrl: 'https://api.test', apiKey: 'sk_test_123' };
+    const config = { baseUrl: 'https://api.test', apiKey: 'ara_live_123' };
     const mockResponse = {
         data: { id: 'ara_msg_1', status: 'queued', mode: 'live', sender: '123', receiver: '5588' }
     };
