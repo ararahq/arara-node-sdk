@@ -137,6 +137,303 @@ export interface GeneratedApiKey {
 
 
 
+// CONTACTS
+
+export interface ContactRequest {
+    name: string;
+    phone: string;
+    email?: string;
+    attributes?: Record<string, unknown>;
+}
+
+export interface ContactPatchRequest {
+    name?: string;
+    email?: string;
+    tags?: string[];
+}
+
+export interface ContactResponse {
+    id: string;
+    name: string;
+    phone: string;
+    email: string | null;
+    attributes: Record<string, unknown> | null;
+    tags: string[];
+    createdAt: string;
+    lifecycle: string;
+    source: string;
+    outboundCount: number;
+    inboundCount: number;
+    firstSeenAt: string | null;
+    lastOutboundAt: string | null;
+    lastInboundAt: string | null;
+    lastMessageAt: string | null;
+    optOutAt: string | null;
+    lastTemplateName: string | null;
+}
+
+export interface ContactsListResponse {
+    contacts: ContactResponse[];
+    total: number;
+    page: number;
+    size: number;
+    totalPages: number;
+}
+
+export interface ContactsBatchError {
+    index: number;
+    phone: string | null;
+    reason: string;
+}
+
+export interface ContactsBatchResponse {
+    importId: string;
+    created: number;
+    updated: number;
+    skipped: number;
+    errors: ContactsBatchError[];
+}
+
+export interface ContactsStatsResponse {
+    total: number;
+    newCount: number;
+    engaged: number;
+    silent: number;
+    dormant: number;
+    optedOut: number;
+}
+
+export interface ContactsReactivationCandidate {
+    phone: string;
+    name: string;
+    lastMessageAt: string | null;
+    lastTemplateName: string | null;
+}
+
+export interface ContactsReactivationResponse {
+    total: number;
+    candidates: ContactsReactivationCandidate[];
+}
+
+export interface ContactMessageItem {
+    id: string;
+    direction: string;
+    status: string;
+    templateName: string | null;
+    body: string | null;
+    createdAt: string;
+}
+
+export interface ContactMessagesResponse {
+    phone: string;
+    total: number;
+    messages: ContactMessageItem[];
+}
+
+// CONVERSATIONS
+
+export interface ConversationReplyRequest {
+    conversationId: string;
+    body: string;
+}
+
+// WALLET
+
+export interface WalletTransactionDTO {
+    id: string;
+    amount: number;
+    type: string;
+    description: string | null;
+    referenceId: string | null;
+    mode: string;
+    createdAt: string | null;
+}
+
+export interface WalletTransactionPageDTO {
+    content: WalletTransactionDTO[];
+    page: number;
+    size: number;
+    totalElements: number;
+    totalPages: number;
+}
+
+export interface AutoRechargeSettingsDTO {
+    enabled: boolean;
+    threshold: number;
+    amount: number;
+    lastAttemptAt: string | null;
+    lastFailureReason: string | null;
+}
+
+export interface UpdateAutoRechargeRequest {
+    enabled?: boolean;
+    threshold?: number;
+    amount?: number;
+}
+
+// NUMBERS
+
+export interface NumberCardDTO {
+    id: string;
+    name: string;
+    alias: string | null;
+    description: string | null;
+    phoneNumber: string;
+    type: string;
+    isDefault: boolean;
+    status: string;
+    qualityScore: string;
+    messagingTier: string;
+    verifiedAt: string | null;
+    lastHealthCheckAt: string | null;
+    provider: string;
+    createdAt: string | null;
+    messagesLast7d: number;
+    messagesLast30d: number;
+}
+
+export interface NumbersSlotDTO {
+    used: number;
+    max: number;
+    planLabel: string;
+    atCap: boolean;
+    noEntitlement: boolean;
+    monthlyPriceCents: number;
+    monthlyTotalCents: number;
+}
+
+export interface NumbersResponseDTO {
+    numbers: NumberCardDTO[];
+    slot: NumbersSlotDTO;
+}
+
+export interface UpdateNumberRequest {
+    alias?: string;
+    isDefault?: boolean;
+    name?: string;
+    description?: string;
+}
+
+export interface RequestNumberRequest {
+    reason?: string;
+    expectedVolume?: string;
+    areaCode?: string;
+    displayName?: string;
+    profilePictureUrl?: string;
+}
+
+// SMART LINKS
+
+export interface CreateWhatsAppSmartLinkRequest {
+    name: string;
+    phoneNumber: string;
+    defaultText?: string;
+    qrCodeColor?: string;
+}
+
+export interface UpdateWhatsAppSmartLinkRequest {
+    name?: string;
+    defaultText?: string;
+    qrCodeColor?: string;
+}
+
+export interface WhatsAppSmartLinkResponse {
+    id: string;
+    name: string;
+    phoneNumber: string;
+    defaultText: string | null;
+    qrCodeColor: string;
+    code: string;
+    shortUrl: string;
+    createdAt: string | null;
+    clicks: number;
+}
+
+// CAMPAIGNS
+
+export interface CampaignContactRequest {
+    to: string;
+    variables?: string[];
+}
+
+export interface CampaignAbConfig {
+    variantBTemplateName: string;
+    metric?: string;
+    samplePct?: number;
+    splitPct?: number;
+    decisionWindowMinutes?: number;
+    autopilot?: boolean;
+}
+
+export interface CampaignRequest {
+    name: string;
+    templateName: string;
+    sender?: string;
+    contacts: CampaignContactRequest[];
+    abTest?: CampaignAbConfig;
+}
+
+export interface CampaignResponse {
+    id: string;
+    name: string;
+    status: string;
+    totalMessages: number;
+    totalCost: number;
+}
+
+export interface CampaignListItem {
+    id: string;
+    name: string;
+    status: string;
+    templateName: string;
+    totalMessages: number;
+    sentCount: number;
+    deliveredCount: number;
+    readCount: number;
+    totalCost: number;
+    createdAt: string | null;
+}
+
+export interface CampaignListResponse {
+    content: CampaignListItem[];
+    totalPages: number;
+    totalElements: number;
+}
+
+export interface CampaignDetailResponse {
+    id: string;
+    name: string;
+    status: string;
+    templateName: string;
+    templateBody: string | null;
+    totalMessages: number;
+    sentCount: number;
+    deliveredCount: number;
+    readCount: number;
+    clickedCount: number;
+    convertedCount: number;
+    convertedValue: number;
+    replyCount: number;
+    holdoutCount: number;
+    blockedCount: number;
+    refundCount: number;
+    refundValue: number;
+    totalCost: number;
+    scheduledAt: string | null;
+    startedAt: string | null;
+    finishedAt: string | null;
+    createdAt: string | null;
+}
+
+export interface CampaignEstimateResponse {
+    templateCategory: string;
+    recipientCount: number;
+    templateCost: number;
+    araraFee: number;
+    unitPrice: number;
+    totalCost: number;
+}
+
 // WEBHOOK EVENTS (Universal Envelope v2)
 
 export interface AraraWebhookEnvelope<T> {

@@ -7,6 +7,13 @@ import { Messages } from './resources/Messages';
 import { Templates } from './resources/Templates';
 import { Organizations } from './resources/Organizations';
 import { ApiKeys } from './resources/ApiKeys';
+import { Contacts } from './resources/Contacts';
+import { Conversations } from './resources/Conversations';
+import { Wallet } from './resources/Wallet';
+import { Numbers } from './resources/Numbers';
+import { SmartLinks } from './resources/SmartLinks';
+import { Campaigns } from './resources/Campaigns';
+import { RawApi } from './resources/RawApi';
 
 export {
     SDKConfig,
@@ -23,6 +30,44 @@ export {
     WebhookUpdateResponse,
     ApiKey,
     GeneratedApiKey,
+
+    ContactRequest,
+    ContactPatchRequest,
+    ContactResponse,
+    ContactsListResponse,
+    ContactsBatchError,
+    ContactsBatchResponse,
+    ContactsStatsResponse,
+    ContactsReactivationCandidate,
+    ContactsReactivationResponse,
+    ContactMessageItem,
+    ContactMessagesResponse,
+
+    ConversationReplyRequest,
+
+    WalletTransactionDTO,
+    WalletTransactionPageDTO,
+    AutoRechargeSettingsDTO,
+    UpdateAutoRechargeRequest,
+
+    NumberCardDTO,
+    NumbersSlotDTO,
+    NumbersResponseDTO,
+    UpdateNumberRequest,
+    RequestNumberRequest,
+
+    CreateWhatsAppSmartLinkRequest,
+    UpdateWhatsAppSmartLinkRequest,
+    WhatsAppSmartLinkResponse,
+
+    CampaignContactRequest,
+    CampaignAbConfig,
+    CampaignRequest,
+    CampaignResponse,
+    CampaignListItem,
+    CampaignListResponse,
+    CampaignDetailResponse,
+    CampaignEstimateResponse,
 
     RevenueRecoveryWebhookEvent,
     AbacatePayWebhookEvent,
@@ -41,6 +86,13 @@ export class NodeSDK {
     public templates: Templates;
     public organizations: Organizations;
     public apiKeys: ApiKeys;
+    public contacts: Contacts;
+    public conversations: Conversations;
+    public wallet: Wallet;
+    public numbers: Numbers;
+    public smartLinks: SmartLinks;
+    public campaigns: Campaigns;
+    public api: RawApi;
 
     constructor(config: SDKConfig) {
         if (!config.apiKey || config.apiKey.trim() === '') {
@@ -68,8 +120,23 @@ export class NodeSDK {
         this.templates = new Templates(this.client);
         this.organizations = new Organizations(this.client);
         this.apiKeys = new ApiKeys(this.client);
+        this.contacts = new Contacts(this.client);
+        this.conversations = new Conversations(this.client);
+        this.wallet = new Wallet(this.client);
+        this.numbers = new Numbers(this.client);
+        this.smartLinks = new SmartLinks(this.client);
+        this.campaigns = new Campaigns(this.client);
+        this.api = new RawApi(this.client);
     }
 }
+
+export { Contacts } from './resources/Contacts';
+export { Conversations } from './resources/Conversations';
+export { Wallet } from './resources/Wallet';
+export { Numbers } from './resources/Numbers';
+export { SmartLinks } from './resources/SmartLinks';
+export { Campaigns } from './resources/Campaigns';
+export { RawApi } from './resources/RawApi';
 
 export { WebhookUtils } from './utils/WebhookUtils';
 export { AraraError } from './errors';
