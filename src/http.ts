@@ -20,22 +20,24 @@ interface ErrorEnvelopeBody {
     details?: Record<string, unknown>;
 }
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+    return typeof value === 'object' && value !== null;
+}
+
+function isErrorEnvelope(data: unknown): data is { error: ErrorEnvelopeBody } {
+    return isRecord(data) && isRecord(data.error);
+}
+
 function parseErrorEnvelope(data: unknown): ErrorEnvelopeBody {
-    if (typeof data !== 'object' || data === null || !('error' in data)) {
+    if (!isErrorEnvelope(data)) {
         return {};
     }
-    const inner = (data as { error: unknown }).error;
-    if (typeof inner !== 'object' || inner === null) {
-        return {};
-    }
-    const envelope = inner as Record<string, unknown>;
+
+    const error = data.error;
     return {
-        code: typeof envelope.code === 'string' ? envelope.code : undefined,
-        message: typeof envelope.message === 'string' ? envelope.message : undefined,
-        details:
-            typeof envelope.details === 'object' && envelope.details !== null
-                ? (envelope.details as Record<string, unknown>)
-                : undefined
+        code: error.code?.length ? error.code : undefined,
+        message: error.message,
+        details: error.details
     };
 }
 
