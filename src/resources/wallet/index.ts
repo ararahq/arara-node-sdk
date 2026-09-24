@@ -1,9 +1,9 @@
-import { BaseResource } from './BaseResource';
+import { BaseResource } from '../base-resource';
 import {
     WalletTransactionPageDTO,
     AutoRechargeSettingsDTO,
     UpdateAutoRechargeRequest
-} from '../types';
+} from './model';
 
 export class Wallet extends BaseResource {
     /**

@@ -1,5 +1,5 @@
-import { BaseResource } from './BaseResource';
-import { NumbersResponseDTO, UpdateNumberRequest, RequestNumberRequest } from '../types';
+import { BaseResource } from '../base-resource';
+import { NumbersResponseDTO, UpdateNumberRequest, RequestNumberRequest } from './model';
 
 export class Numbers extends BaseResource {
     /**

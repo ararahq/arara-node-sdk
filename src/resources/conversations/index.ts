@@ -1,5 +1,5 @@
-import { BaseResource } from './BaseResource';
-import { ConversationReplyRequest } from '../types';
+import { BaseResource } from '../base-resource';
+import { ConversationReplyRequest } from './model';
 
 export class Conversations extends BaseResource {
     /**

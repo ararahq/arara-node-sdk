@@ -1,9 +1,9 @@
-import { BaseResource } from './BaseResource';
+import { BaseResource } from '../base-resource';
 import {
     CreateWhatsAppSmartLinkRequest,
     UpdateWhatsAppSmartLinkRequest,
     WhatsAppSmartLinkResponse
-} from '../types';
+} from './model';
 
 export class SmartLinks extends BaseResource {
     /**

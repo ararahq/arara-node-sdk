@@ -1,5 +1,5 @@
-import { BaseResource } from './BaseResource';
-import { ApiKey, GeneratedApiKey } from '../types';
+import { BaseResource } from '../base-resource';
+import { API_KEY_MODES, ApiKey, ApiKeyMode, GeneratedApiKey } from './model';
 
 export class ApiKeys extends BaseResource {
     /**
@@ -15,7 +15,7 @@ export class ApiKeys extends BaseResource {
      * Create a new API key.
      * POST /v1/api-keys
      */
-    async create(mode: 'LIVE' | 'TEST' = 'LIVE'): Promise<GeneratedApiKey> {
+    async create(mode: ApiKeyMode = API_KEY_MODES.LIVE): Promise<GeneratedApiKey> {
         const response = await this.client.post<GeneratedApiKey>('/v1/api-keys', null, {
             params: { mode }
         });

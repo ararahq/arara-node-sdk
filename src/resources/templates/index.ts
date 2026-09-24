@@ -1,5 +1,5 @@
-import { BaseResource } from './BaseResource';
-import { Template, TemplateStatus, CreateTemplateRequest, TemplateResponse } from '../types';
+import { BaseResource } from '../base-resource';
+import { Template, TemplateStatus, CreateTemplateRequest, TemplateResponse } from './model';
 
 export class Templates extends BaseResource {
     /**
