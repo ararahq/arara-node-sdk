@@ -144,6 +144,77 @@ app.post('/webhook/arara', express.json(), (req, res) => {
 });
 ```
 
+### 7. Contacts (`sdk.contacts`)
+
+```typescript
+const page = await sdk.contacts.list(0, 50);
+const contact = await sdk.contacts.get('+5511999998888');
+await sdk.contacts.update('+5511999998888', { name: "Maria", tags: ["vip"] });
+await sdk.contacts.importBatch([{ name: "Maria", phone: "+5511999998888" }]);
+const stats = await sdk.contacts.stats();
+const history = await sdk.contacts.messages('+5511999998888', 30);
+```
+
+### 8. Conversations (`sdk.conversations`)
+
+```typescript
+const conversations = await sdk.conversations.list();
+const messages = await sdk.conversations.messages('conversation-id');
+await sdk.conversations.reply({ conversationId: 'conversation-id', body: "Oi, tudo certo?" });
+const windows = await sdk.conversations.windowStatus(['+5511999998888']);
+```
+
+### 9. Campaigns (`sdk.campaigns`)
+
+```typescript
+const estimate = await sdk.campaigns.estimate('promo', 1200);
+
+const campaign = await sdk.campaigns.create({
+  name: "Black Friday",
+  templateName: "promo",
+  contacts: [{ to: "whatsapp:+5511999998888", variables: ["Maria"] }]
+});
+
+const detail = await sdk.campaigns.get(campaign.id);
+await sdk.campaigns.cancel(campaign.id);
+```
+
+### 10. Wallet (`sdk.wallet`)
+
+```typescript
+const transactions = await sdk.wallet.transactions(0, 20);
+const autoRecharge = await sdk.wallet.getAutoRecharge();
+await sdk.wallet.updateAutoRecharge({ enabled: true, threshold: 50, amount: 200 });
+```
+
+### 11. Numbers (`sdk.numbers`)
+
+```typescript
+const { numbers, slot } = await sdk.numbers.list();
+await sdk.numbers.update(numbers[0].id, { alias: "Suporte" });
+const warming = await sdk.numbers.warming(numbers[0].id);
+```
+
+### 12. Smart Links (`sdk.smartLinks`)
+
+```typescript
+const link = await sdk.smartLinks.create({
+  name: "Promo",
+  phoneNumber: "+5511999998888",
+  defaultText: "Quero a oferta"
+});
+const stats = await sdk.smartLinks.stats(link.id);
+```
+
+### 13. Raw API (`sdk.api`)
+
+Escape hatch for endpoints without a typed resource yet. Inherits auth, `baseUrl`, timeout and retries.
+
+```typescript
+const data = await sdk.api.get('/v1/some/endpoint');
+await sdk.api.post('/v1/some/endpoint', { foo: "bar" });
+```
+
 ## Error Handling
 
 Every failed request throws a typed `AraraError` with the parsed API error envelope:
