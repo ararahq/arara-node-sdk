@@ -1,4 +1,4 @@
-import { WebhookUtils } from '../src/utils/WebhookUtils';
+import { WebhookUtils } from '../src/utils/webhook-utils';
 
 describe('WebhookUtils', () => {
     const envelope = {
