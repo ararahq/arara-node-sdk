@@ -43,7 +43,7 @@ describe('toAraraError', () => {
     });
 
     it('should expose retryAfter in seconds when the header is present', () => {
-        const error = buildAxiosError(config, 429, { error: { code: 'RATE_LIMITED', message: 'Calma' } }, {
+        const error = buildAxiosError(config, 429, { error: { code: 'SEND_RATE_LIMITED', message: 'Calma' } }, {
             'retry-after': '7'
         });
 
@@ -159,7 +159,7 @@ describe('setupInterceptors retry flow', () => {
                     buildAxiosError(
                         requestConfig as InternalAxiosRequestConfig,
                         429,
-                        { error: { code: 'RATE_LIMITED', message: 'Calma' } },
+                        { error: { code: 'SEND_RATE_LIMITED', message: 'Calma' } },
                         { 'retry-after': '0' }
                     )
                 );
@@ -170,7 +170,7 @@ describe('setupInterceptors retry flow', () => {
         await expect(client.get('/v1/messages')).rejects.toMatchObject({
             name: 'AraraError',
             statusCode: 429,
-            code: 'RATE_LIMITED'
+            code: 'SEND_RATE_LIMITED'
         });
         expect(attempts).toBe(3);
     });
