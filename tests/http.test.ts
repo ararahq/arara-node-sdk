@@ -258,6 +258,7 @@ describe('isReplayableRequest', () => {
         expect(isReplayableRequest({ headers: undefined } as never)).toBe(true);
         expect(isReplayableRequest({ method: 'patch', headers: undefined } as never)).toBe(false);
         expect(isReplayableRequest({ method: 'patch', headers: { 'Idempotency-Key': 'k' } } as never)).toBe(false);
+        expect(isReplayableRequest({ method: 'post', headers: undefined } as never)).toBe(false);
     });
 });
 
