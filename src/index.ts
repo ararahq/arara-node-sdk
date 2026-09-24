@@ -2,11 +2,10 @@ import axios, { AxiosInstance } from 'axios';
 import type { SDKConfig } from './config';
 import { DEFAULT_MAX_RETRIES, setupInterceptors } from './http';
 
-import { Users } from './resources/users';
+import { Auth } from './resources/auth';
 import { Messages } from './resources/messages';
 import { Templates } from './resources/templates';
-import { Organizations } from './resources/organizations';
-import { ApiKeys } from './resources/api-keys';
+import { OptOuts } from './resources/opt-outs';
 import { Contacts } from './resources/contacts';
 import { Conversations } from './resources/conversations';
 import { Wallet } from './resources/wallet';
@@ -17,20 +16,24 @@ import { RawApi } from './resources/raw-api';
 
 export { SDKConfig } from './config';
 export type {
-    User,
-    UpdateUserRequest,
+    CurrentUser,
+    Pagination,
+    PaginatedResponse,
+    PageParams,
     SendMessageRequest,
     SendMessageOptions,
     MessageResponse,
+    BatchMessageItem,
+    BatchMessageRequest,
+    BatchMessageResponse,
     Template,
+    CreateTemplateRequest,
+    TemplateButton,
     TemplateResponse,
     TemplateStatus,
-    ApiKeyMode,
-    UpdateWebhookRequest,
-    OrganizationWebhook,
-    WebhookUpdateResponse,
-    ApiKey,
-    GeneratedApiKey,
+    ListTemplatesParams,
+    TemplateAnalyticsParams,
+    OptOutRequest,
 
     ContactRequest,
     ContactPatchRequest,
@@ -76,19 +79,15 @@ export type {
     AraraWebhookEvent
 } from './resources';
 
-export { API_KEY_MODES } from './resources';
-
 const DEFAULT_BASE_URL = 'https://api.ararahq.com';
 
 export class NodeSDK {
     private client: AxiosInstance;
 
-
-    public users: Users;
+    public auth: Auth;
     public messages: Messages;
     public templates: Templates;
-    public organizations: Organizations;
-    public apiKeys: ApiKeys;
+    public optOuts: OptOuts;
     public contacts: Contacts;
     public conversations: Conversations;
     public wallet: Wallet;
@@ -118,11 +117,10 @@ export class NodeSDK {
 
         setupInterceptors(this.client, config.maxRetries ?? DEFAULT_MAX_RETRIES);
 
-        this.users = new Users(this.client);
+        this.auth = new Auth(this.client);
         this.messages = new Messages(this.client);
         this.templates = new Templates(this.client);
-        this.organizations = new Organizations(this.client);
-        this.apiKeys = new ApiKeys(this.client);
+        this.optOuts = new OptOuts(this.client);
         this.contacts = new Contacts(this.client);
         this.conversations = new Conversations(this.client);
         this.wallet = new Wallet(this.client);
@@ -140,6 +138,10 @@ export { Numbers } from './resources/numbers';
 export { SmartLinks } from './resources/smart-links';
 export { Campaigns } from './resources/campaigns';
 export { RawApi } from './resources/raw-api';
+export { Auth } from './resources/auth';
+export { OptOuts } from './resources/opt-outs';
+export { Messages, MAX_BATCH_SIZE } from './resources/messages';
+export { Templates } from './resources/templates';
 
 export { WebhookUtils } from './utils/webhook-utils';
-export { AraraError } from './errors';
+export { AraraError, AuthenticationError, PlanFeatureLockedError } from './errors';
