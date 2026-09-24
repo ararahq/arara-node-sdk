@@ -54,7 +54,7 @@ export type {
 } from './numbers/model';
 
 export { OptOuts } from './opt-outs';
-export type { OptOutRequest } from './opt-outs/model';
+export type { OptOutRequest, OptOutItem, OptOutList, OptOutCheck } from './opt-outs/model';
 
 export { SmartLinks } from './smart-links';
 export type {

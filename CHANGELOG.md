@@ -24,7 +24,7 @@ Aligns the SDK with the API contract. Breaking changes are listed with the migra
 - `messages.sendBatch` (`POST /v1/messages/batch`, up to 1000 messages) and `messages.get(id)` (`GET /v1/messages/{id}`).
 - `templates.analytics(id, { period })` returns `TemplateAnalytics`; `templates.analyticsAll({ period })` returns `TemplateAnalyticsSummary[]`. Rates are strings with one decimal (`"97.5"`).
 - `CreateTemplateRequest.carouselCards`; `TemplateButton` types `FLOW` (with `flowId`) and `CHARGE`.
-- `sdk.optOuts` (`list`, `get`, `create`, `delete`).
+- `sdk.optOuts` (`list` → `{ items, total }`, `get` → `{ phone, channel, optedOut }`, `create` → `OptOutItem`, `delete`). Phones must be E.164 with `+` (the API rule); other formats throw `RangeError` locally.
 - `PlanFeatureLockedError` (`feature`, `currentPlan`, `upgradeTo`) and `AuthenticationError`.
 - `SendMessageRequest` gains `sender`, `type`, `interactive`, `location`, `reaction`, `charge`, `replyTo`, `smartLinkParam`, `smartLinkUrl`, `mode`; `MessageResponse` gains `body`, `cost`, `reason`; its `id` is `string | null` and the never-returned `createdAt` is gone. `sendBatch` items are `BatchMessageItemResponse` (`id`, `receiver`, `status`, `cost`). `media_url` is marked deprecated (the API removes it on 2027-01-01).
 

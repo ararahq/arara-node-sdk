@@ -38,6 +38,9 @@ export type {
     TemplateAnalyticsSummary,
     CarouselCard,
     OptOutRequest,
+    OptOutItem,
+    OptOutList,
+    OptOutCheck,
 
     ContactRequest,
     ContactPatchRequest,

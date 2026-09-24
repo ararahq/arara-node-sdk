@@ -120,9 +120,12 @@ await sdk.templates.delete(welcome.id);
 
 ### 4. Opt-outs (`sdk.optOuts`)
 
+Phones must be E.164 with the leading `+`; other formats throw `RangeError` before calling the API.
+
 ```typescript
 await sdk.optOuts.create({ phone: "+5511999998888", reason: "pediu pra sair" });
-const optOut = await sdk.optOuts.get("+5511999998888");
+const { optedOut } = await sdk.optOuts.get("+5511999998888");
+const { items, total } = await sdk.optOuts.list();
 await sdk.optOuts.delete("+5511999998888");
 ```
 

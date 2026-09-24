@@ -57,16 +57,34 @@ describe('Auth, SmartLinks, OptOuts and Campaigns resources', () => {
         expect(result.pagination.totalPages).toBe(2);
     });
 
-    it('should manage opt-outs', async () => {
-        await sdk.optOuts.list();
-        await sdk.optOuts.get('+5588999999999');
-        await sdk.optOuts.create({ phone: '5588999999999', reason: 'pediu' });
-        await sdk.optOuts.delete('5588999999999');
+    it('should manage opt-outs with the api shapes', async () => {
+        const item = { phone: '+5588999999999', channel: 'WHATSAPP', reason: 'pediu', createdAt: '2026-09-24T12:00:00Z' };
+        mockGet
+            .mockResolvedValueOnce({ data: { items: [item], total: 1 } })
+            .mockResolvedValueOnce({ data: { phone: '+5588999999999', channel: 'WHATSAPP', optedOut: true } });
+        mockPost.mockResolvedValueOnce({ data: item });
 
+        const list = await sdk.optOuts.list();
+        const check = await sdk.optOuts.get(' +5588999999999 ');
+        const created = await sdk.optOuts.create({ phone: '+5588999999999', reason: 'pediu' });
+        await sdk.optOuts.delete('+5588999999999');
+
+        expect(list.total).toBe(1);
+        expect(check.optedOut).toBe(true);
+        expect(created).toEqual(item);
         expect(mockGet).toHaveBeenNthCalledWith(1, '/v1/opt-outs');
         expect(mockGet).toHaveBeenNthCalledWith(2, '/v1/opt-outs/%2B5588999999999');
-        expect(mockPost).toHaveBeenCalledWith('/v1/opt-outs', { phone: '5588999999999', reason: 'pediu' });
-        expect(mockDelete).toHaveBeenCalledWith('/v1/opt-outs/5588999999999');
+        expect(mockPost).toHaveBeenCalledWith('/v1/opt-outs', { phone: '+5588999999999', reason: 'pediu' });
+        expect(mockDelete).toHaveBeenCalledWith('/v1/opt-outs/%2B5588999999999');
+    });
+
+    it('should reject opt-out phones that are not E.164 without calling the api', async () => {
+        await expect(sdk.optOuts.create({ phone: '5588999999999' })).rejects.toThrow(RangeError);
+        await expect(sdk.optOuts.get('whatsapp:+5588999999999')).rejects.toThrow(RangeError);
+        await expect(sdk.optOuts.delete('+0123')).rejects.toThrow(RangeError);
+        expect(mockPost).not.toHaveBeenCalled();
+        expect(mockGet).not.toHaveBeenCalled();
+        expect(mockDelete).not.toHaveBeenCalled();
     });
 
     it('should generate an idempotency key when creating a campaign without one', async () => {
