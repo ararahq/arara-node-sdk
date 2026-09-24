@@ -30,7 +30,8 @@ export interface SendMessageOptions {
 }
 
 export interface MessageResponse {
-    id: string;
+    /** Message id; null when the API could not assign one (e.g. rejected before persistence). */
+    id: string | null;
     status: string;
     mode: string;
     sender: string;
@@ -38,13 +39,23 @@ export interface MessageResponse {
     body?: string | null;
     cost?: number | null;
     reason?: string | null;
-    createdAt?: string;
 }
 
 export interface BatchMessageItem {
     receiver: string;
+    templateVariables?: string[];
+    /** Alias of templateVariables. */
     variables?: string[];
-    [key: string]: unknown;
+    smartLinkParam?: string;
+    smartLinkUrl?: string;
+    mediaUrl?: string;
+}
+
+export interface BatchMessageItemResponse {
+    id: string | null;
+    receiver: string;
+    status: string;
+    cost: number | null;
 }
 
 export interface BatchMessageRequest {
@@ -59,5 +70,5 @@ export interface BatchMessageResponse {
     total: number;
     accepted: number;
     totalCost: number;
-    messages: MessageResponse[];
+    messages: BatchMessageItemResponse[];
 }

@@ -40,7 +40,8 @@ export type {
     MessageResponse,
     BatchMessageItem,
     BatchMessageRequest,
-    BatchMessageResponse
+    BatchMessageResponse,
+    BatchMessageItemResponse
 } from './messages/model';
 
 export { Numbers } from './numbers';

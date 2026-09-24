@@ -26,6 +26,7 @@ export type {
     BatchMessageItem,
     BatchMessageRequest,
     BatchMessageResponse,
+    BatchMessageItemResponse,
     Template,
     CreateTemplateRequest,
     TemplateButton,

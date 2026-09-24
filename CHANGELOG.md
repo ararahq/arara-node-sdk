@@ -25,7 +25,7 @@ Aligns the SDK with the API contract. Breaking changes are listed with the migra
 - `CreateTemplateRequest.carouselCards`; `TemplateButton` types `FLOW` (with `flowId`) and `CHARGE`.
 - `sdk.optOuts` (`list`, `get`, `create`, `delete`).
 - `PlanFeatureLockedError` (`feature`, `currentPlan`, `upgradeTo`) and `AuthenticationError`.
-- `SendMessageRequest` gains `sender`, `type`, `interactive`, `location`, `reaction`, `charge`, `replyTo`, `smartLinkParam`, `smartLinkUrl`, `mode`; `MessageResponse` gains `body`, `cost`, `reason`. `media_url` is marked deprecated (the API removes it on 2027-01-01).
+- `SendMessageRequest` gains `sender`, `type`, `interactive`, `location`, `reaction`, `charge`, `replyTo`, `smartLinkParam`, `smartLinkUrl`, `mode`; `MessageResponse` gains `body`, `cost`, `reason`; its `id` is `string | null` and the never-returned `createdAt` is gone. `sendBatch` items are `BatchMessageItemResponse` (`id`, `receiver`, `status`, `cost`). `media_url` is marked deprecated (the API removes it on 2027-01-01).
 
 ## 1.9.0
 

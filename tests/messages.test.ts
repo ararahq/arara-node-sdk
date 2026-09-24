@@ -10,7 +10,16 @@ describe('Messages Resource', () => {
     let mockPost: jest.Mock;
     const config = { baseUrl: 'https://api.test', apiKey: 'ara_live_123' };
     const mockResponse = {
-        data: { id: 'ara_msg_1', status: 'queued', mode: 'live', sender: '123', receiver: '5588' }
+        data: {
+            id: 'ara_msg_1',
+            status: 'QUEUED',
+            mode: 'LIVE',
+            sender: '5511900000000',
+            receiver: '5588',
+            body: null,
+            cost: 0.35,
+            reason: null
+        }
     };
 
     beforeEach(() => {
@@ -93,7 +102,23 @@ describe('Messages Resource', () => {
     it('should send a batch with an idempotency key', async () => {
         const payload = { templateName: 'hello', messages: [{ receiver: '5588', variables: ['A'] }] };
 
-        await sdk.messages.sendBatch(payload, { idempotencyKey: 'batch-1' });
+        const batchBody = {
+            batchId: 'batch_9',
+            templateName: 'hello',
+            total: 2,
+            accepted: 1,
+            totalCost: 0.35,
+            messages: [
+                { id: 'ara_msg_9', receiver: '5588', status: 'QUEUED', cost: 0.35 },
+                { id: null, receiver: '0', status: 'FAILED', cost: null }
+            ]
+        };
+        mockPost.mockResolvedValueOnce({ data: batchBody });
+
+        const result = await sdk.messages.sendBatch(payload, { idempotencyKey: 'batch-1' });
+
+        expect(result.messages[1].id).toBeNull();
+        expect(result.messages[1].cost).toBeNull();
 
         expect(mockPost).toHaveBeenCalledWith('/v1/messages/batch', payload, {
             headers: { 'Idempotency-Key': 'batch-1' }
