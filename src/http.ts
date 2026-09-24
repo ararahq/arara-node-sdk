@@ -1,4 +1,4 @@
-import axios, { AxiosError, AxiosInstance, InternalAxiosRequestConfig } from 'axios';
+import axios, { AxiosError, AxiosInstance } from 'axios';
 import { AraraError } from './errors';
 
 export const DEFAULT_MAX_RETRIES = 3;
@@ -10,32 +10,30 @@ const UNKNOWN_ERROR_CODE = 'UNKNOWN_ERROR';
 const RATE_LIMIT_STATUS = 429;
 const SERVER_ERROR_THRESHOLD = 500;
 
-interface RetryableRequestConfig extends InternalAxiosRequestConfig {
-    retryCount?: number;
-}
-
 interface ErrorEnvelopeBody {
     code?: string;
     message?: string;
     details?: Record<string, unknown>;
 }
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+    return typeof value === 'object' && value !== null;
+}
+
+function isErrorEnvelope(data: unknown): data is { error: ErrorEnvelopeBody } {
+    return isRecord(data) && isRecord(data.error);
+}
+
 function parseErrorEnvelope(data: unknown): ErrorEnvelopeBody {
-    if (typeof data !== 'object' || data === null || !('error' in data)) {
+    if (!isErrorEnvelope(data)) {
         return {};
     }
-    const inner = (data as { error: unknown }).error;
-    if (typeof inner !== 'object' || inner === null) {
-        return {};
-    }
-    const envelope = inner as Record<string, unknown>;
+
+    const error = data.error;
     return {
-        code: typeof envelope.code === 'string' ? envelope.code : undefined,
-        message: typeof envelope.message === 'string' ? envelope.message : undefined,
-        details:
-            typeof envelope.details === 'object' && envelope.details !== null
-                ? (envelope.details as Record<string, unknown>)
-                : undefined
+        code: error.code?.length ? error.code : undefined,
+        message: error.message,
+        details: error.details
     };
 }
 
@@ -96,10 +94,12 @@ export function setupInterceptors(client: AxiosInstance, maxRetries: number): vo
         if (!axios.isAxiosError(error)) {
             throw error;
         }
-        const config = error.config as RetryableRequestConfig | undefined;
+        const config = error.config;
         if (config && isRetryableError(error)) {
+            // @ts-expect-error retryCount is an internal property managed by the SDK.
             const attempt = config.retryCount ?? 0;
             if (attempt < maxRetries) {
+                // @ts-expect-error retryCount is an internal property managed by the SDK.
                 config.retryCount = attempt + 1;
                 const retryAfterSeconds = parseRetryAfterSeconds(error.response?.headers?.['retry-after']);
                 await sleep(computeRetryDelayMs(attempt, retryAfterSeconds));
