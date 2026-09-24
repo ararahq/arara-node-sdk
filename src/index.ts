@@ -138,5 +138,5 @@ export { SmartLinks } from './resources/SmartLinks';
 export { Campaigns } from './resources/Campaigns';
 export { RawApi } from './resources/RawApi';
 
-export { WebhookUtils } from './utils/WebhookUtils';
+export { WebhookUtils } from './utils/webhook-utils';
 export { AraraError } from './errors';
