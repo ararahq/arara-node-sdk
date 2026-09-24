@@ -4,6 +4,7 @@ import {
     UpdateWhatsAppSmartLinkRequest,
     WhatsAppSmartLinkResponse
 } from './model';
+import { PageParams, PaginatedResponse } from '../pagination';
 
 export class SmartLinks extends BaseResource {
     /**
@@ -28,11 +29,14 @@ export class SmartLinks extends BaseResource {
     }
 
     /**
-     * List WhatsApp smart links.
+     * List WhatsApp smart links, paginated.
      * GET /v1/smart-links/whatsapp
      */
-    async list(): Promise<WhatsAppSmartLinkResponse[]> {
-        const response = await this.client.get<WhatsAppSmartLinkResponse[]>('/v1/smart-links/whatsapp');
+    async list(params: PageParams = {}): Promise<PaginatedResponse<WhatsAppSmartLinkResponse>> {
+        const response = await this.client.get<PaginatedResponse<WhatsAppSmartLinkResponse>>(
+            '/v1/smart-links/whatsapp',
+            { params }
+        );
         return response.data;
     }
 

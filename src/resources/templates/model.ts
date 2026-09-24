@@ -4,9 +4,11 @@ export interface Template {
     formattedName: string;
     category: 'UTILITY' | 'MARKETING' | 'AUTHENTICATION';
     language: string;
-    body: string;
+    bodyPreview?: string | null;
+    structureJson?: string | null;
+    availableForSending?: boolean;
     samples?: string[];
-    buttonsConfig?: any[];
+    buttonsConfig?: unknown[];
     providerStatus: string;
     rejectionReason?: string | null;
     createdAt: string;
@@ -31,7 +33,7 @@ export interface TemplateButton {
     text: string;
     url?: string;
     phone?: string;
-    extraConfig?: Record<string, any>;
+    extraConfig?: Record<string, unknown>;
 }
 
 export interface TemplateResponse {
@@ -43,4 +45,16 @@ export interface TemplateStatus {
     status: string;
     rejectionReason?: string | null;
     category: string;
+}
+
+export interface ListTemplatesParams {
+    name?: string;
+    status?: string;
+    page?: number;
+    size?: number;
+}
+
+export interface TemplateAnalyticsParams {
+    /** Window such as `7d`, `30d` (API default) or `90d`. */
+    period?: string;
 }

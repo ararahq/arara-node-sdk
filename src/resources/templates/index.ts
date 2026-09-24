@@ -1,13 +1,21 @@
 import { BaseResource } from '../base-resource';
-import { Template, TemplateStatus, CreateTemplateRequest, TemplateResponse } from './model';
+import { PaginatedResponse } from '../pagination';
+import {
+    Template,
+    TemplateStatus,
+    CreateTemplateRequest,
+    TemplateResponse,
+    ListTemplatesParams,
+    TemplateAnalyticsParams
+} from './model';
 
 export class Templates extends BaseResource {
     /**
-     * List all templates.
+     * List templates, paginated. Filter by exact name with `params.name`.
      * GET /v1/templates
      */
-    async list(): Promise<Template[]> {
-        const response = await this.client.get<Template[]>('/v1/templates');
+    async list(params: ListTemplatesParams = {}): Promise<PaginatedResponse<Template>> {
+        const response = await this.client.get<PaginatedResponse<Template>>('/v1/templates', { params });
         return response.data;
     }
 
@@ -21,28 +29,42 @@ export class Templates extends BaseResource {
     }
 
     /**
-     * Get a specific template by name.
-     * GET /v1/templates/{name}
+     * Get a template by its id (UUID). To look up by name, use `list({ name })`.
+     * GET /v1/templates/{id}
      */
-    async get(name: string): Promise<Template> {
-        const response = await this.client.get<Template>(`/v1/templates/${name}`);
+    async get(id: string): Promise<Template> {
+        const response = await this.client.get<Template>(templatePath(id));
         return response.data;
     }
 
     /**
-     * Get template status from provider.
-     * GET /v1/templates/{name}/status
+     * Get the provider approval status of a template by id (UUID).
+     * GET /v1/templates/{id}/status
      */
-    async getStatus(name: string): Promise<TemplateStatus> {
-        const response = await this.client.get<TemplateStatus>(`/v1/templates/${name}/status`);
+    async getStatus(id: string): Promise<TemplateStatus> {
+        const response = await this.client.get<TemplateStatus>(`${templatePath(id)}/status`);
         return response.data;
     }
 
     /**
-     * Delete a template by name.
-     * DELETE /v1/templates/{name}
+     * Delete a template by id (UUID).
+     * DELETE /v1/templates/{id}
      */
-    async delete(name: string): Promise<void> {
-        await this.client.delete(`/v1/templates/${name}`);
+    async delete(id: string): Promise<void> {
+        await this.client.delete(templatePath(id));
     }
+
+    /**
+     * Delivery and read analytics for one template (by id) or, without id, for all templates.
+     * GET /v1/templates/{id}/analytics · GET /v1/templates/analytics
+     */
+    async analytics(id?: string, params: TemplateAnalyticsParams = {}): Promise<Record<string, unknown>> {
+        const path = id === undefined ? '/v1/templates/analytics' : `${templatePath(id)}/analytics`;
+        const response = await this.client.get<Record<string, unknown>>(path, { params });
+        return response.data;
+    }
+}
+
+function templatePath(id: string): string {
+    return `/v1/templates/${encodeURIComponent(id)}`;
 }

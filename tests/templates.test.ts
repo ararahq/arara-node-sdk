@@ -4,86 +4,93 @@ import axios from 'axios';
 jest.mock('axios');
 const mockedAxios = axios as jest.Mocked<typeof axios>;
 
+const TEMPLATE_ID = '3f0c6a52-8a0e-4c1b-9d7e-1b2a3c4d5e6f';
+
 describe('Templates Resource', () => {
     let sdk: NodeSDK;
+    let mockGet: jest.Mock;
+    let mockDelete: jest.Mock;
     const config = { baseUrl: 'https://api.test', apiKey: 'ara_live_123' };
 
     beforeEach(() => {
-        mockedAxios.create.mockReturnThis();
-        sdk = new NodeSDK(config);
+        mockGet = jest.fn();
+        mockDelete = jest.fn().mockResolvedValue({});
         mockedAxios.create.mockReturnValue({
-            post: jest.fn(),
-            get: jest.fn(),
-            patch: jest.fn(),
-            delete: jest.fn(),
+            get: mockGet,
+            delete: mockDelete,
             defaults: { headers: {} },
             interceptors: { request: { use: jest.fn() }, response: { use: jest.fn() } }
-        } as any);
+        } as never);
+        sdk = new NodeSDK(config);
     });
 
     afterEach(() => {
         jest.clearAllMocks();
     });
 
-    it('should list templates', async () => {
-        const mockResponse = { data: [{ id: '1', name: 'temp1' }] };
-        const mockGet = jest.fn().mockResolvedValue(mockResponse);
+    it('should return the paginated envelope when listing templates', async () => {
+        const page = {
+            data: [{ id: TEMPLATE_ID, name: 'boas_vindas' }],
+            pagination: { page: 0, size: 50, totalElements: 1, totalPages: 1 }
+        };
+        mockGet.mockResolvedValue({ data: page });
 
-        mockedAxios.create.mockReturnValue({
-            get: mockGet,
-            defaults: { headers: {} },
-            interceptors: { request: { use: jest.fn() }, response: { use: jest.fn() } }
-        } as any);
-        sdk = new NodeSDK(config);
+        const result = await sdk.templates.list({ name: 'boas_vindas', page: 0, size: 50 });
 
-        const result = await sdk.templates.list();
-        expect(mockGet).toHaveBeenCalledWith('/v1/templates');
-        expect(result).toEqual(mockResponse.data);
+        expect(mockGet).toHaveBeenCalledWith('/v1/templates', {
+            params: { name: 'boas_vindas', page: 0, size: 50 }
+        });
+        expect(result.data[0].id).toBe(TEMPLATE_ID);
+        expect(result.pagination.totalElements).toBe(1);
     });
 
-    it('should get template by id', async () => {
-        const mockResponse = { data: { id: '1', name: 'temp1' } };
-        const mockGet = jest.fn().mockResolvedValue(mockResponse);
+    it('should list templates without filters by default', async () => {
+        mockGet.mockResolvedValue({ data: { data: [], pagination: {} } });
 
-        mockedAxios.create.mockReturnValue({
-            get: mockGet,
-            defaults: { headers: {} },
-            interceptors: { request: { use: jest.fn() }, response: { use: jest.fn() } }
-        } as any);
-        sdk = new NodeSDK(config);
+        await sdk.templates.list();
 
-        const result = await sdk.templates.get('1');
-        expect(mockGet).toHaveBeenCalledWith('/v1/templates/1');
-        expect(result).toEqual(mockResponse.data);
+        expect(mockGet).toHaveBeenCalledWith('/v1/templates', { params: {} });
     });
 
-    it('should get template status', async () => {
-        const mockResponse = { data: { status: 'APPROVED' } };
-        const mockGet = jest.fn().mockResolvedValue(mockResponse);
+    it('should get a template by id', async () => {
+        mockGet.mockResolvedValue({ data: { id: TEMPLATE_ID } });
 
-        mockedAxios.create.mockReturnValue({
-            get: mockGet,
-            defaults: { headers: {} },
-            interceptors: { request: { use: jest.fn() }, response: { use: jest.fn() } }
-        } as any);
-        sdk = new NodeSDK(config);
+        const result = await sdk.templates.get(TEMPLATE_ID);
 
-        const result = await sdk.templates.getStatus('1');
-        expect(mockGet).toHaveBeenCalledWith('/v1/templates/1/status');
-        expect(result).toEqual(mockResponse.data);
+        expect(mockGet).toHaveBeenCalledWith(`/v1/templates/${TEMPLATE_ID}`);
+        expect(result).toEqual({ id: TEMPLATE_ID });
     });
 
-    it('should delete template', async () => {
-        const mockDelete = jest.fn().mockResolvedValue({});
+    it('should get template status by id', async () => {
+        mockGet.mockResolvedValue({ data: { status: 'APPROVED' } });
 
-        mockedAxios.create.mockReturnValue({
-            delete: mockDelete,
-            defaults: { headers: {} },
-            interceptors: { request: { use: jest.fn() }, response: { use: jest.fn() } }
-        } as any);
-        sdk = new NodeSDK(config);
+        await sdk.templates.getStatus(TEMPLATE_ID);
 
-        await sdk.templates.delete('1');
-        expect(mockDelete).toHaveBeenCalledWith('/v1/templates/1');
+        expect(mockGet).toHaveBeenCalledWith(`/v1/templates/${TEMPLATE_ID}/status`);
+    });
+
+    it('should delete a template by id', async () => {
+        await sdk.templates.delete(TEMPLATE_ID);
+
+        expect(mockDelete).toHaveBeenCalledWith(`/v1/templates/${TEMPLATE_ID}`);
+    });
+
+    it('should get analytics of one template with a period', async () => {
+        mockGet.mockResolvedValue({ data: { sent: 10 } });
+
+        const result = await sdk.templates.analytics(TEMPLATE_ID, { period: '7d' });
+
+        expect(mockGet).toHaveBeenCalledWith(`/v1/templates/${TEMPLATE_ID}/analytics`, {
+            params: { period: '7d' }
+        });
+        expect(result).toEqual({ sent: 10 });
+    });
+
+    it('should get analytics of all templates when no id is given', async () => {
+        mockGet.mockResolvedValue({ data: {} });
+
+        await sdk.templates.analytics();
+
+        expect(mockGet).toHaveBeenCalledWith('/v1/templates/analytics', { params: {} });
     });
 });
