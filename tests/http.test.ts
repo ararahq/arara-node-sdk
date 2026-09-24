@@ -257,5 +257,31 @@ describe('isReplayableRequest', () => {
         expect(isReplayableRequest({ method: 'post', headers: { 'Idempotency-Key': 'k' } } as never)).toBe(true);
         expect(isReplayableRequest({ headers: undefined } as never)).toBe(true);
         expect(isReplayableRequest({ method: 'patch', headers: undefined } as never)).toBe(false);
+        expect(isReplayableRequest({ method: 'patch', headers: { 'Idempotency-Key': 'k' } } as never)).toBe(false);
+    });
+});
+
+describe('403 on message lookup', () => {
+    it('should map an empty 403 on GET /v1/messages/{id} to RESOURCE_FORBIDDEN, not AuthenticationError', () => {
+        const config = { method: 'get', url: '/v1/messages/ara_msg_1', headers: {} } as InternalAxiosRequestConfig;
+
+        const result = toAraraError(buildAxiosError(config, 403, ''));
+
+        expect(result).not.toBeInstanceOf(AuthenticationError);
+        expect(result.code).toBe('RESOURCE_FORBIDDEN');
+        expect(result.statusCode).toBe(403);
+    });
+
+    it('should keep a Spring 403 body on the same path as AuthenticationError', () => {
+        const config = { method: 'get', url: '/v1/messages/ara_msg_1', headers: {} } as InternalAxiosRequestConfig;
+        const springBody = { timestamp: '2026-09-24T12:00:00Z', status: 403, error: 'Forbidden', path: '/v1/messages/ara_msg_1' };
+
+        expect(toAraraError(buildAxiosError(config, 403, springBody))).toBeInstanceOf(AuthenticationError);
+    });
+
+    it('should keep an empty 403 on other paths as AuthenticationError', () => {
+        const config = { method: 'get', url: '/v1/contacts', headers: {} } as InternalAxiosRequestConfig;
+
+        expect(toAraraError(buildAxiosError(config, 403, ''))).toBeInstanceOf(AuthenticationError);
     });
 });

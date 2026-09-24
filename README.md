@@ -253,7 +253,7 @@ try {
 Two subclasses narrow the common cases:
 
 - `PlanFeatureLockedError` (403 `PLAN_FEATURE_LOCKED`): exposes `feature`, `currentPlan` and `upgradeTo`.
-- `AuthenticationError` (401, or 403 without an error code): the key was rejected (invalid, expired, IP not allowed, missing permission).
+- `AuthenticationError` (401, or 403 without an error code): the key was rejected (invalid, expired, IP not allowed, missing permission). Exception: `messages.get(id)` on a message owned by another user answers an empty 403, which the SDK raises as a plain `AraraError` with code `RESOURCE_FORBIDDEN`.
 
 ```typescript
 import { PlanFeatureLockedError, AuthenticationError } from '@ararahq/sdk';

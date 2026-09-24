@@ -15,7 +15,7 @@ Aligns the SDK with the API contract. Breaking changes are listed with the migra
 - **`smartLinks.list()` returns `PaginatedResponse<WhatsAppSmartLinkResponse>`** and accepts `{ page, size }`.
 - **`Template` mirrors the API `TemplateResponse`**: `body`, `samples` and `buttonsConfig` removed (the API never returned them). The text is in `bodyPreview`; `structureJson` is the provider structure as an object, not the body. New fields: `originalCategory`, `providerName`, `providerTemplateId`, `availableForSending`, `unavailableReason`, `usageGuide`, `variablesSchema`.
 - **POST without `Idempotency-Key` is no longer retried.** Retries only replay `GET`/`PUT`/`DELETE` or a `POST` with the header. Use `sdk.api.post(path, body, { headers: { 'Idempotency-Key': key } })` if you need retries on a raw POST.
-- 401, and 403 without an error code, now throw `AuthenticationError`; 403 `PLAN_FEATURE_LOCKED` throws `PlanFeatureLockedError`. Both extend `AraraError`, so existing `instanceof AraraError` checks keep working.
+- 401, and 403 without an error code, now throw `AuthenticationError` (except the empty 403 of `messages.get` for another user's message, which is `AraraError` `RESOURCE_FORBIDDEN`); 403 `PLAN_FEATURE_LOCKED` throws `PlanFeatureLockedError`. Both extend `AraraError`, so existing `instanceof AraraError` checks keep working.
 
 ### Added
 

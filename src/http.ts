@@ -14,6 +14,9 @@ const FORBIDDEN_STATUS = 403;
 const PLAN_FEATURE_LOCKED_CODE = 'PLAN_FEATURE_LOCKED';
 const IDEMPOTENCY_KEY_HEADER = 'Idempotency-Key';
 const SAFE_METHODS = new Set(['get', 'head', 'options', 'put', 'delete']);
+const KEYED_REPLAY_METHOD = 'post';
+const RESOURCE_FORBIDDEN_CODE = 'RESOURCE_FORBIDDEN';
+const MESSAGE_BY_ID_PATH = /^(?:https?:\/\/[^/]+)?(?:\/api)?\/v1\/messages\/[^/?]+(?:\?.*)?$/;
 
 interface ErrorEnvelopeBody {
     code?: string;
@@ -66,6 +69,13 @@ export function toAraraError(error: AxiosError): AraraError {
         });
     }
     const envelope = parseErrorEnvelope(response.data);
+    if (isForeignMessageLookup(error, response.status, response.data)) {
+        return new AraraError({
+            statusCode: response.status,
+            code: RESOURCE_FORBIDDEN_CODE,
+            message: 'This message belongs to another user of the organization.'
+        });
+    }
     return buildTypedError({
         statusCode: response.status,
         code: envelope.code ?? UNKNOWN_ERROR_CODE,
@@ -73,6 +83,19 @@ export function toAraraError(error: AxiosError): AraraError {
         details: envelope.details,
         retryAfter: parseRetryAfterSeconds(response.headers?.['retry-after'])
     }, envelope.code);
+}
+
+/**
+ * GET /v1/messages/{id} answers 403 with an empty body when the message belongs to another
+ * user. The key was accepted, so this is not an authentication failure.
+ */
+function isForeignMessageLookup(error: AxiosError, status: number, data: unknown): boolean {
+    const method = (error.config?.method ?? 'get').toLowerCase();
+    const isEmptyBody = data === undefined || data === null || data === '';
+    return status === FORBIDDEN_STATUS
+        && method === 'get'
+        && isEmptyBody
+        && MESSAGE_BY_ID_PATH.test(error.config?.url ?? '');
 }
 
 function buildTypedError(params: AraraErrorParams, envelopeCode: string | undefined): AraraError {
@@ -99,11 +122,14 @@ function hasIdempotencyKey(headers: unknown): boolean {
 
 /**
  * A request may be replayed only when repeating it cannot duplicate side effects:
- * idempotent HTTP methods, or a POST/PATCH carrying an Idempotency-Key.
+ * idempotent HTTP methods, or a POST carrying an Idempotency-Key. PATCH is never replayed.
  */
 export function isReplayableRequest(config: InternalAxiosRequestConfig): boolean {
     const method = (config.method ?? 'get').toLowerCase();
-    return SAFE_METHODS.has(method) || hasIdempotencyKey(config.headers);
+    if (SAFE_METHODS.has(method)) {
+        return true;
+    }
+    return method === KEYED_REPLAY_METHOD && hasIdempotencyKey(config.headers);
 }
 
 export function isRetryableError(error: AxiosError): boolean {
