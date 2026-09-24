@@ -1,4 +1,4 @@
-import axios, { AxiosError, AxiosInstance, InternalAxiosRequestConfig } from 'axios';
+import axios, { AxiosError, AxiosInstance } from 'axios';
 import { AraraError } from './errors';
 
 export const DEFAULT_MAX_RETRIES = 3;
@@ -9,10 +9,6 @@ const NETWORK_ERROR_CODE = 'NETWORK_ERROR';
 const UNKNOWN_ERROR_CODE = 'UNKNOWN_ERROR';
 const RATE_LIMIT_STATUS = 429;
 const SERVER_ERROR_THRESHOLD = 500;
-
-interface RetryableRequestConfig extends InternalAxiosRequestConfig {
-    retryCount?: number;
-}
 
 interface ErrorEnvelopeBody {
     code?: string;
@@ -98,10 +94,12 @@ export function setupInterceptors(client: AxiosInstance, maxRetries: number): vo
         if (!axios.isAxiosError(error)) {
             throw error;
         }
-        const config = error.config as RetryableRequestConfig | undefined;
+        const config = error.config;
         if (config && isRetryableError(error)) {
+            // @ts-expect-error retryCount is an internal property managed by the SDK.
             const attempt = config.retryCount ?? 0;
             if (attempt < maxRetries) {
+                // @ts-expect-error retryCount is an internal property managed by the SDK.
                 config.retryCount = attempt + 1;
                 const retryAfterSeconds = parseRetryAfterSeconds(error.response?.headers?.['retry-after']);
                 await sleep(computeRetryDelayMs(attempt, retryAfterSeconds));
