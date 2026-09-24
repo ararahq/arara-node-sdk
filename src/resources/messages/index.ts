@@ -1,5 +1,5 @@
-import { BaseResource } from './BaseResource';
-import { SendMessageRequest, SendMessageOptions, MessageResponse } from '../types';
+import { BaseResource } from '../base-resource';
+import { SendMessageRequest, SendMessageOptions, MessageResponse } from './model';
 
 export class Messages extends BaseResource {
     /**

@@ -1,4 +1,4 @@
-import { BaseResource } from './BaseResource';
+import { BaseResource } from '../base-resource';
 import {
     ContactRequest,
     ContactPatchRequest,
@@ -8,7 +8,7 @@ import {
     ContactsStatsResponse,
     ContactsReactivationResponse,
     ContactMessagesResponse
-} from '../types';
+} from './model';
 
 export class Contacts extends BaseResource {
     /**

@@ -1,5 +1,5 @@
-import { BaseResource } from './BaseResource';
-import { OrganizationWebhook, UpdateWebhookRequest, WebhookUpdateResponse } from '../types';
+import { BaseResource } from '../base-resource';
+import { OrganizationWebhook, UpdateWebhookRequest, WebhookUpdateResponse } from './model';
 
 export class Organizations extends BaseResource {
     /**

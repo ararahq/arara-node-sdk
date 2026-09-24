@@ -1,12 +1,12 @@
-import { BaseResource } from './BaseResource';
+import { BaseResource } from '../base-resource';
 import {
     CampaignRequest,
     CampaignResponse,
     CampaignListResponse,
     CampaignEstimateResponse,
-    CampaignDetailResponse,
-    SendMessageOptions
-} from '../types';
+    CampaignDetailResponse
+} from './model';
+import { SendMessageOptions } from '../messages/model';
 
 export class Campaigns extends BaseResource {
     /**

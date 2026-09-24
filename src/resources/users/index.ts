@@ -1,5 +1,5 @@
-import { BaseResource } from './BaseResource';
-import { User, UpdateUserRequest } from '../types';
+import { BaseResource } from '../base-resource';
+import { User, UpdateUserRequest } from './model';
 
 export class Users extends BaseResource {
     /**

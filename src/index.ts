@@ -1,22 +1,22 @@
 import axios, { AxiosInstance } from 'axios';
-import { SDKConfig } from './types';
+import type { SDKConfig } from './config';
 import { DEFAULT_MAX_RETRIES, setupInterceptors } from './http';
 
-import { Users } from './resources/Users';
-import { Messages } from './resources/Messages';
-import { Templates } from './resources/Templates';
-import { Organizations } from './resources/Organizations';
-import { ApiKeys } from './resources/ApiKeys';
-import { Contacts } from './resources/Contacts';
-import { Conversations } from './resources/Conversations';
-import { Wallet } from './resources/Wallet';
-import { Numbers } from './resources/Numbers';
-import { SmartLinks } from './resources/SmartLinks';
-import { Campaigns } from './resources/Campaigns';
-import { RawApi } from './resources/RawApi';
+import { Users } from './resources/users';
+import { Messages } from './resources/messages';
+import { Templates } from './resources/templates';
+import { Organizations } from './resources/organizations';
+import { ApiKeys } from './resources/api-keys';
+import { Contacts } from './resources/contacts';
+import { Conversations } from './resources/conversations';
+import { Wallet } from './resources/wallet';
+import { Numbers } from './resources/numbers';
+import { SmartLinks } from './resources/smart-links';
+import { Campaigns } from './resources/campaigns';
+import { RawApi } from './resources/raw-api';
 
-export {
-    SDKConfig,
+export { SDKConfig } from './config';
+export type {
     User,
     UpdateUserRequest,
     SendMessageRequest,
@@ -25,6 +25,7 @@ export {
     Template,
     TemplateResponse,
     TemplateStatus,
+    ApiKeyMode,
     UpdateWebhookRequest,
     OrganizationWebhook,
     WebhookUpdateResponse,
@@ -73,7 +74,9 @@ export {
     AbacatePayWebhookEvent,
     MessageStatusWebhookEvent,
     AraraWebhookEvent
-} from './types';
+} from './resources';
+
+export { API_KEY_MODES } from './resources';
 
 const DEFAULT_BASE_URL = 'https://api.ararahq.com';
 
@@ -130,13 +133,13 @@ export class NodeSDK {
     }
 }
 
-export { Contacts } from './resources/Contacts';
-export { Conversations } from './resources/Conversations';
-export { Wallet } from './resources/Wallet';
-export { Numbers } from './resources/Numbers';
-export { SmartLinks } from './resources/SmartLinks';
-export { Campaigns } from './resources/Campaigns';
-export { RawApi } from './resources/RawApi';
+export { Contacts } from './resources/contacts';
+export { Conversations } from './resources/conversations';
+export { Wallet } from './resources/wallet';
+export { Numbers } from './resources/numbers';
+export { SmartLinks } from './resources/smart-links';
+export { Campaigns } from './resources/campaigns';
+export { RawApi } from './resources/raw-api';
 
 export { WebhookUtils } from './utils/webhook-utils';
 export { AraraError } from './errors';
