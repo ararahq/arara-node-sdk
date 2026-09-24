@@ -30,9 +30,13 @@ describe('Auth, SmartLinks, OptOuts and Campaigns resources', () => {
     });
 
     it('should read the current user from /auth/me without the v1 prefix', async () => {
-        await sdk.auth.me();
+        const body = { name: 'Micael', email: 'dono@empresa.com', role: 'ADMIN', emailPending: false };
+        mockGet.mockResolvedValueOnce({ data: body });
+
+        const me = await sdk.auth.me();
 
         expect(mockGet).toHaveBeenCalledWith('/auth/me');
+        expect(me).toEqual(body);
     });
 
     it('should not expose the removed users, organizations and apiKeys resources', () => {

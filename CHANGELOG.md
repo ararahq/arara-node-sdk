@@ -7,7 +7,7 @@ Aligns the SDK with the API contract. Breaking changes are listed with the migra
 ### Breaking
 
 - **Removed `sdk.users`, `sdk.organizations` and `sdk.apiKeys`** (and the types `User`, `UpdateUserRequest`, `UpdateWebhookRequest`, `OrganizationWebhook`, `WebhookUpdateResponse`, `ApiKey`, `ApiKeyMode`, `GeneratedApiKey`, `API_KEY_MODES`). The API answers 403 to all of them when called with an API key.
-  - `sdk.users.getMe()` → `sdk.auth.me()` (`GET /auth/me`, requires an ADMIN key). Profile updates, webhook config and key management stay in the dashboard.
+  - `sdk.users.getMe()` → `sdk.auth.me()` (`GET /auth/me`, requires an ADMIN key). It returns `{ name, email, role, emailPending }`; `phoneNumber` and `needsInitialOnboarding` are not available. Profile updates, webhook config and key management stay in the dashboard.
 - **`templates.get`, `templates.getStatus` and `templates.delete` take the template id (UUID)**, not the name. The API answers 400 `INVALID_PATH_PARAM` to a name.
   - Lookup by name: `(await sdk.templates.list({ name: 'welcome' })).data[0]`.
 - **`templates.list()` returns `PaginatedResponse<Template>`** (`{ data, pagination: { page, size, totalElements, totalPages } }`) instead of `Template[]`, and accepts `{ name, status, page, size }`.
