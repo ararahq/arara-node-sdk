@@ -238,7 +238,7 @@ try {
 } catch (error) {
   if (error instanceof AraraError) {
     console.error(error.statusCode, error.code, error.message, error.details);
-    if (error.code === 'RATE_LIMITED' && error.retryAfter !== undefined) {
+    if (error.statusCode === 429 && error.retryAfter !== undefined) {
       console.error(`Retry after ${error.retryAfter}s`);
     }
   }
@@ -248,7 +248,7 @@ try {
 | Property | Type | Description |
 | --- | --- | --- |
 | `statusCode` | `number \| undefined` | HTTP status. `undefined` for network errors |
-| `code` | `string` | API error code (e.g. `INSUFFICIENT_FUNDS`). `NETWORK_ERROR` when the request never got a response |
+| `code` | `string` | API error code (e.g. `INSUFFICIENT_FUNDS`). `NETWORK_ERROR` when the request never got a response. A 429 carries `SEND_RATE_LIMITED`, `MARKETING_FREQUENCY_EXCEEDED`, `BATCH_BUSY` or `RATE_LIMIT_EXCEEDED` |
 | `message` | `string` | Human-readable message from the API |
 | `details` | `object \| undefined` | Extra context from the API |
 | `retryAfter` | `number \| undefined` | Seconds to wait, from the `Retry-After` header |
