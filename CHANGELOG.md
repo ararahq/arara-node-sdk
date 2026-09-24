@@ -19,6 +19,7 @@ Aligns the SDK with the API contract. Breaking changes are listed with the migra
 
 ### Added
 
+- `CampaignRequest.scheduledAt` and `CampaignResponse.scheduledAt` (scheduled campaigns).
 - `messages.send` and `campaigns.create` always send `Idempotency-Key`: your key, or a UUID v4 generated per call and reused on every retry of that call.
 - `messages.sendBatch` (`POST /v1/messages/batch`, up to 1000 messages) and `messages.get(id)` (`GET /v1/messages/{id}`).
 - `templates.analytics(id, { period })` returns `TemplateAnalytics`; `templates.analyticsAll({ period })` returns `TemplateAnalyticsSummary[]`. Rates are strings with one decimal (`"97.5"`).

@@ -78,6 +78,22 @@ describe('Auth, SmartLinks, OptOuts and Campaigns resources', () => {
         expect(headers['Idempotency-Key']).toMatch(/^[0-9a-f-]{36}$/);
     });
 
+    it('should send scheduledAt and read it back from the campaign response', async () => {
+        const body = { id: 'c1', name: 'Black Friday', status: 'SCHEDULED', totalMessages: 1, totalCost: 0.35, scheduledAt: '2026-11-27T12:00:00Z' };
+        mockPost.mockResolvedValueOnce({ data: body });
+        const payload = {
+            name: 'Black Friday',
+            templateName: 'promo',
+            contacts: [{ to: '+5511999998888', variables: ['Maria'] }],
+            scheduledAt: '2026-11-27T12:00:00Z'
+        };
+
+        const result = await sdk.campaigns.create(payload);
+
+        expect(mockPost.mock.calls[0][1]).toEqual(payload);
+        expect(result.scheduledAt).toBe('2026-11-27T12:00:00Z');
+    });
+
     it('should use the caller idempotency key when creating a campaign', async () => {
         await sdk.campaigns.create({ name: 'c' } as never, { idempotencyKey: 'camp-1' });
 
