@@ -6,7 +6,9 @@ import {
     CreateTemplateRequest,
     TemplateResponse,
     ListTemplatesParams,
-    TemplateAnalyticsParams
+    TemplateAnalyticsParams,
+    TemplateAnalytics,
+    TemplateAnalyticsSummary
 } from './model';
 
 export class Templates extends BaseResource {
@@ -55,12 +57,20 @@ export class Templates extends BaseResource {
     }
 
     /**
-     * Delivery and read analytics for one template (by id) or, without id, for all templates.
-     * GET /v1/templates/{id}/analytics · GET /v1/templates/analytics
+     * Delivery and read analytics of one template by id.
+     * GET /v1/templates/{id}/analytics
      */
-    async analytics(id?: string, params: TemplateAnalyticsParams = {}): Promise<Record<string, unknown>> {
-        const path = id === undefined ? '/v1/templates/analytics' : `${templatePath(id)}/analytics`;
-        const response = await this.client.get<Record<string, unknown>>(path, { params });
+    async analytics(id: string, params: TemplateAnalyticsParams = {}): Promise<TemplateAnalytics> {
+        const response = await this.client.get<TemplateAnalytics>(`${templatePath(id)}/analytics`, { params });
+        return response.data;
+    }
+
+    /**
+     * Analytics of every template with traffic in the period, one item per template name.
+     * GET /v1/templates/analytics
+     */
+    async analyticsAll(params: TemplateAnalyticsParams = {}): Promise<TemplateAnalyticsSummary[]> {
+        const response = await this.client.get<TemplateAnalyticsSummary[]>('/v1/templates/analytics', { params });
         return response.data;
     }
 }

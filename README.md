@@ -104,7 +104,8 @@ const { data, pagination } = await sdk.templates.list({ page: 0, size: 50 });
 const [welcome] = (await sdk.templates.list({ name: 'welcome' })).data;
 const details = await sdk.templates.get(welcome.id);
 const status = await sdk.templates.getStatus(welcome.id);
-const analytics = await sdk.templates.analytics(welcome.id, { period: '30d' });
+const analytics = await sdk.templates.analytics(welcome.id, { period: '30d' }); // deliveryRate: "97.5"
+const allAnalytics = await sdk.templates.analyticsAll({ period: '7d' });
 
 await sdk.templates.create({
   name: "promo_christmas",

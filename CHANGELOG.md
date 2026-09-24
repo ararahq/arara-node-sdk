@@ -13,7 +13,7 @@ Aligns the SDK with the API contract. Breaking changes are listed with the migra
 - **`templates.list()` returns `PaginatedResponse<Template>`** (`{ data, pagination: { page, size, totalElements, totalPages } }`) instead of `Template[]`, and accepts `{ name, status, page, size }`.
   - `const templates = await sdk.templates.list()` → `const { data: templates } = await sdk.templates.list()`.
 - **`smartLinks.list()` returns `PaginatedResponse<WhatsAppSmartLinkResponse>`** and accepts `{ page, size }`.
-- **`Template.body` removed** (the API never returned it); use `bodyPreview` / `structureJson`.
+- **`Template` mirrors the API `TemplateResponse`**: `body`, `samples` and `buttonsConfig` removed (the API never returned them). The text is in `bodyPreview`; `structureJson` is the provider structure as an object, not the body. New fields: `originalCategory`, `providerName`, `providerTemplateId`, `availableForSending`, `unavailableReason`, `usageGuide`, `variablesSchema`.
 - **POST without `Idempotency-Key` is no longer retried.** Retries only replay `GET`/`PUT`/`DELETE` or a `POST` with the header. Use `sdk.api.post(path, body, { headers: { 'Idempotency-Key': key } })` if you need retries on a raw POST.
 - 401, and 403 without an error code, now throw `AuthenticationError`; 403 `PLAN_FEATURE_LOCKED` throws `PlanFeatureLockedError`. Both extend `AraraError`, so existing `instanceof AraraError` checks keep working.
 
@@ -21,7 +21,8 @@ Aligns the SDK with the API contract. Breaking changes are listed with the migra
 
 - `messages.send` and `campaigns.create` always send `Idempotency-Key`: your key, or a UUID v4 generated per call and reused on every retry of that call.
 - `messages.sendBatch` (`POST /v1/messages/batch`, up to 1000 messages) and `messages.get(id)` (`GET /v1/messages/{id}`).
-- `templates.analytics(id?, { period })`.
+- `templates.analytics(id, { period })` returns `TemplateAnalytics`; `templates.analyticsAll({ period })` returns `TemplateAnalyticsSummary[]`. Rates are strings with one decimal (`"97.5"`).
+- `CreateTemplateRequest.carouselCards`; `TemplateButton` types `FLOW` (with `flowId`) and `CHARGE`.
 - `sdk.optOuts` (`list`, `get`, `create`, `delete`).
 - `PlanFeatureLockedError` (`feature`, `currentPlan`, `upgradeTo`) and `AuthenticationError`.
 - `SendMessageRequest` gains `sender`, `type`, `interactive`, `location`, `reaction`, `charge`, `replyTo`, `smartLinkParam`, `smartLinkUrl`, `mode`; `MessageResponse` gains `body`, `cost`, `reason`. `media_url` is marked deprecated (the API removes it on 2027-01-01).

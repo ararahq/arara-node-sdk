@@ -33,6 +33,9 @@ export type {
     TemplateStatus,
     ListTemplatesParams,
     TemplateAnalyticsParams,
+    TemplateAnalytics,
+    TemplateAnalyticsSummary,
+    CarouselCard,
     OptOutRequest,
 
     ContactRequest,

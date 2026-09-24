@@ -70,7 +70,10 @@ export type {
     TemplateResponse,
     TemplateStatus,
     ListTemplatesParams,
-    TemplateAnalyticsParams
+    TemplateAnalyticsParams,
+    TemplateAnalytics,
+    TemplateAnalyticsSummary,
+    CarouselCard
 } from './templates/model';
 
 
