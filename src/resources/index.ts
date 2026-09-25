@@ -1,6 +1,7 @@
-export { ApiKeys } from './api-keys';
-export { API_KEY_MODES } from './api-keys/model';
-export type { ApiKey, ApiKeyMode, GeneratedApiKey } from './api-keys/model';
+export { Auth } from './auth';
+export type { CurrentUser } from './auth/model';
+
+export type { Pagination, PaginatedResponse, PageParams } from './pagination';
 
 export { Campaigns } from './campaigns';
 export type {
@@ -33,7 +34,15 @@ export { Conversations } from './conversations';
 export type { ConversationReplyRequest } from './conversations/model';
 
 export { Messages } from './messages';
-export type { SendMessageRequest, SendMessageOptions, MessageResponse } from './messages/model';
+export type {
+    SendMessageRequest,
+    SendMessageOptions,
+    MessageResponse,
+    BatchMessageItem,
+    BatchMessageRequest,
+    BatchMessageResponse,
+    BatchMessageItemResponse
+} from './messages/model';
 
 export { Numbers } from './numbers';
 export type {
@@ -44,8 +53,8 @@ export type {
     RequestNumberRequest
 } from './numbers/model';
 
-export { Organizations } from './organizations';
-export type { UpdateWebhookRequest, OrganizationWebhook, WebhookUpdateResponse } from './organizations/model';
+export { OptOuts } from './opt-outs';
+export type { OptOutRequest, OptOutItem, OptOutList, OptOutCheck } from './opt-outs/model';
 
 export { SmartLinks } from './smart-links';
 export type {
@@ -60,11 +69,14 @@ export type {
     CreateTemplateRequest,
     TemplateButton,
     TemplateResponse,
-    TemplateStatus
+    TemplateStatus,
+    ListTemplatesParams,
+    TemplateAnalyticsParams,
+    TemplateAnalytics,
+    TemplateAnalyticsSummary,
+    CarouselCard
 } from './templates/model';
 
-export { Users } from './users';
-export type { User, UpdateUserRequest } from './users/model';
 
 export { Wallet } from './wallet';
 export type {

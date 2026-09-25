@@ -18,6 +18,8 @@ export interface CampaignRequest {
     sender?: string;
     contacts: CampaignContactRequest[];
     abTest?: CampaignAbConfig;
+    /** ISO-8601. Omitted or null dispatches now; set creates the campaign as SCHEDULED. */
+    scheduledAt?: string | null;
 }
 
 export interface CampaignResponse {
@@ -26,6 +28,7 @@ export interface CampaignResponse {
     status: string;
     totalMessages: number;
     totalCost: number;
+    scheduledAt?: string | null;
 }
 
 export interface CampaignListItem {

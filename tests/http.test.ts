@@ -1,7 +1,8 @@
 import axios, { AxiosError, AxiosResponse, InternalAxiosRequestConfig } from 'axios';
-import { AraraError } from '../src/errors';
+import { AraraError, AuthenticationError, PlanFeatureLockedError } from '../src/errors';
 import {
     computeRetryDelayMs,
+    isReplayableRequest,
     isRetryableError,
     parseRetryAfterSeconds,
     setupInterceptors,
@@ -42,7 +43,7 @@ describe('toAraraError', () => {
     });
 
     it('should expose retryAfter in seconds when the header is present', () => {
-        const error = buildAxiosError(config, 429, { error: { code: 'RATE_LIMITED', message: 'Calma' } }, {
+        const error = buildAxiosError(config, 429, { error: { code: 'SEND_RATE_LIMITED', message: 'Calma' } }, {
             'retry-after': '7'
         });
 
@@ -158,7 +159,7 @@ describe('setupInterceptors retry flow', () => {
                     buildAxiosError(
                         requestConfig as InternalAxiosRequestConfig,
                         429,
-                        { error: { code: 'RATE_LIMITED', message: 'Calma' } },
+                        { error: { code: 'SEND_RATE_LIMITED', message: 'Calma' } },
                         { 'retry-after': '0' }
                     )
                 );
@@ -169,7 +170,7 @@ describe('setupInterceptors retry flow', () => {
         await expect(client.get('/v1/messages')).rejects.toMatchObject({
             name: 'AraraError',
             statusCode: 429,
-            code: 'RATE_LIMITED'
+            code: 'SEND_RATE_LIMITED'
         });
         expect(attempts).toBe(3);
     });
@@ -194,5 +195,94 @@ describe('setupInterceptors retry flow', () => {
             code: 'INVALID_PAYLOAD'
         });
         expect(attempts).toBe(1);
+    });
+});
+
+describe('typed errors', () => {
+    const config = { headers: {} } as InternalAxiosRequestConfig;
+
+    it('should map 403 PLAN_FEATURE_LOCKED to PlanFeatureLockedError with plan details', () => {
+        const error = buildAxiosError(config, 403, {
+            error: {
+                code: 'PLAN_FEATURE_LOCKED',
+                message: 'Essa feature está liberada a partir do plano Voo.',
+                details: { feature: 'campaigns', currentPlan: 'DECOLAGEM', upgradeTo: 'VOO' }
+            }
+        });
+
+        const result = toAraraError(error);
+
+        expect(result).toBeInstanceOf(PlanFeatureLockedError);
+        expect(result).toBeInstanceOf(AraraError);
+        const locked = result as PlanFeatureLockedError;
+        expect(locked.feature).toBe('campaigns');
+        expect(locked.currentPlan).toBe('DECOLAGEM');
+        expect(locked.upgradeTo).toBe('VOO');
+    });
+
+    it('should ignore non-string plan details', () => {
+        const error = buildAxiosError(config, 403, { error: { code: 'PLAN_FEATURE_LOCKED', details: { feature: 1 } } });
+
+        expect((toAraraError(error) as PlanFeatureLockedError).feature).toBeUndefined();
+    });
+
+    it('should map 403 without an error code to AuthenticationError', () => {
+        const error = buildAxiosError(config, 403, { timestamp: 'x', status: 403, error: 'Forbidden', path: '/users/me' });
+
+        const result = toAraraError(error);
+
+        expect(result).toBeInstanceOf(AuthenticationError);
+        expect(result.code).toBe('UNKNOWN_ERROR');
+    });
+
+    it('should map 401 to AuthenticationError', () => {
+        expect(toAraraError(buildAxiosError(config, 401, ''))).toBeInstanceOf(AuthenticationError);
+    });
+
+    it('should keep 403 business errors with a code as plain AraraError', () => {
+        const error = buildAxiosError(config, 403, { error: { code: 'RESOURCE_FORBIDDEN', message: 'no' } });
+
+        const result = toAraraError(error);
+
+        expect(result).not.toBeInstanceOf(AuthenticationError);
+        expect(result.code).toBe('RESOURCE_FORBIDDEN');
+    });
+});
+
+describe('isReplayableRequest', () => {
+    it('should allow idempotent methods and POST with a key only', () => {
+        expect(isReplayableRequest({ method: 'get', headers: {} } as InternalAxiosRequestConfig)).toBe(true);
+        expect(isReplayableRequest({ method: 'post', headers: {} } as InternalAxiosRequestConfig)).toBe(false);
+        expect(isReplayableRequest({ method: 'post', headers: { 'Idempotency-Key': ' ' } } as never)).toBe(false);
+        expect(isReplayableRequest({ method: 'post', headers: { 'Idempotency-Key': 'k' } } as never)).toBe(true);
+        expect(isReplayableRequest({ headers: undefined } as never)).toBe(true);
+        expect(isReplayableRequest({ method: 'patch', headers: undefined } as never)).toBe(false);
+        expect(isReplayableRequest({ method: 'patch', headers: { 'Idempotency-Key': 'k' } } as never)).toBe(false);
+        expect(isReplayableRequest({ method: 'post', headers: undefined } as never)).toBe(false);
+    });
+});
+
+describe('403 on message lookup', () => {
+    it('should map an empty 403 on GET /v1/messages/{id} to RESOURCE_FORBIDDEN, not AuthenticationError', () => {
+        const config = { method: 'get', url: '/v1/messages/ara_msg_1', headers: {} } as InternalAxiosRequestConfig;
+
+        const result = toAraraError(buildAxiosError(config, 403, ''));
+
+        expect(result).not.toBeInstanceOf(AuthenticationError);
+        expect(result.code).toBe('RESOURCE_FORBIDDEN');
+        expect(result.statusCode).toBe(403);
+    });
+
+    it('should keep a Spring 403 body on the same path as AuthenticationError', () => {
+        const config = { method: 'get', url: '/v1/messages/ara_msg_1', headers: {} } as InternalAxiosRequestConfig;
+        const springBody = { timestamp: '2026-09-24T12:00:00Z', status: 403, error: 'Forbidden', path: '/v1/messages/ara_msg_1' };
+
+        expect(toAraraError(buildAxiosError(config, 403, springBody))).toBeInstanceOf(AuthenticationError);
+    });
+
+    it('should keep an empty 403 on other paths as AuthenticationError', () => {
+        const config = { method: 'get', url: '/v1/contacts', headers: {} } as InternalAxiosRequestConfig;
+
+        expect(toAraraError(buildAxiosError(config, 403, ''))).toBeInstanceOf(AuthenticationError);
     });
 });

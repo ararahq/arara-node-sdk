@@ -34,22 +34,23 @@ const sdk = new NodeSDK({
 });
 ```
 
-The SDK automatically retries network errors, `5xx` and `429` responses with exponential backoff, honoring the `Retry-After` header when present. Set `maxRetries: 0` to disable.
+The SDK automatically retries network errors, `5xx` and `429` responses with exponential backoff, honoring the `Retry-After` header when present. Only requests that are safe to replay are retried: `GET`/`PUT`/`DELETE`, and `POST` carrying an `Idempotency-Key`. `messages.send`, `messages.sendBatch` and `campaigns.create` always send one (yours, or a UUID v4 generated per call and reused on every retry), so a retry never duplicates a send or a charge. Set `maxRetries: 0` to disable.
+
+## API key permissions
+
+`GET` on contacts, conversations, wallet, smart links, opt-outs and `auth.me()` requires an **ADMIN** key. Keys with only `READ` get `AuthenticationError` (403) on those reads. API keys, user profile and organization webhook are not manageable with an API key; use the dashboard.
 
 ## Resources
 
-### 1. Users (`sdk.users`)
+### 1. Current user (`sdk.auth`)
 
 ```typescript
-const user = await sdk.users.getMe();
-
-const updated = await sdk.users.update({
-  name: "New Name",
-  phoneNumber: "+5511999998888"
-});
+const me = await sdk.auth.me(); // GET /auth/me, ADMIN key
 ```
 
 ### 2. Messages (`sdk.messages`)
+
+`receiver` accepts `whatsapp:+5511...`, `+5511...` or digits only.
 
 ```typescript
 // Template standard
@@ -73,7 +74,7 @@ const sessionResponse = await sdk.messages.send({
   body: "Olá! Como posso ajudar?"
 });
 
-// Envio idempotente (deduplica retries do seu lado)
+// Envio idempotente com sua própria chave (sem ela o SDK gera uma por chamada)
 const idempotentResponse = await sdk.messages.send(
   {
     receiver: "whatsapp:+5511999998888",
@@ -82,14 +83,29 @@ const idempotentResponse = await sdk.messages.send(
   },
   { idempotencyKey: "order-8231-welcome" }
 );
+
+// Lote: um template, até 1000 destinatários
+const batch = await sdk.messages.sendBatch({
+  templateName: "welcome",
+  messages: [{ receiver: "+5511999998888", variables: ["John"] }]
+});
+
+// Consulta por id
+const message = await sdk.messages.get(response.id);
 ```
 
 ### 3. Templates (`sdk.templates`)
 
-```typescript
-const templates = await sdk.templates.list();
+`get`, `getStatus`, `delete` and `analytics` take the template **id** (UUID), not the name. To find a template by name, filter the list.
 
-const details = await sdk.templates.get('template-name');
+```typescript
+const { data, pagination } = await sdk.templates.list({ page: 0, size: 50 });
+
+const [welcome] = (await sdk.templates.list({ name: 'welcome' })).data;
+const details = await sdk.templates.get(welcome.id);
+const status = await sdk.templates.getStatus(welcome.id);
+const analytics = await sdk.templates.analytics(welcome.id, { period: '30d' }); // deliveryRate: "97.5"
+const allAnalytics = await sdk.templates.analyticsAll({ period: '7d' });
 
 await sdk.templates.create({
   name: "promo_christmas",
@@ -99,27 +115,21 @@ await sdk.templates.create({
   samples: { "1": "John" }
 });
 
-await sdk.templates.delete('template-name');
+await sdk.templates.delete(welcome.id);
 ```
 
-### 4. Organization & Webhooks (`sdk.organizations`)
+### 4. Opt-outs (`sdk.optOuts`)
+
+Phones must be E.164 with the leading `+`; other formats throw `RangeError` before calling the API.
 
 ```typescript
-const config = await sdk.organizations.getWebhook();
-
-await sdk.organizations.updateWebhook({
-  url: "https://your-api.com/webhook",
-  secret: "secure-secret"
-});
+await sdk.optOuts.create({ phone: "+5511999998888", reason: "pediu pra sair" });
+const { optedOut } = await sdk.optOuts.get("+5511999998888");
+const { items, total } = await sdk.optOuts.list();
+await sdk.optOuts.delete("+5511999998888");
 ```
 
-### 5. API Keys (`sdk.apiKeys`)
-
-```typescript
-const newKey = await sdk.apiKeys.create('LIVE');
-```
-
-### 6. Webhook Events
+### 5. Webhook Events
 
 ```typescript
 import { AraraWebhookEvent, WebhookUtils } from '@ararahq/sdk';
@@ -144,7 +154,7 @@ app.post('/webhook/arara', express.json(), (req, res) => {
 });
 ```
 
-### 7. Contacts (`sdk.contacts`)
+### 6. Contacts (`sdk.contacts`)
 
 ```typescript
 const page = await sdk.contacts.list(0, 50);
@@ -155,7 +165,7 @@ const stats = await sdk.contacts.stats();
 const history = await sdk.contacts.messages('+5511999998888', 30);
 ```
 
-### 8. Conversations (`sdk.conversations`)
+### 7. Conversations (`sdk.conversations`)
 
 ```typescript
 const conversations = await sdk.conversations.list();
@@ -164,7 +174,7 @@ await sdk.conversations.reply({ conversationId: 'conversation-id', body: "Oi, tu
 const windows = await sdk.conversations.windowStatus(['+5511999998888']);
 ```
 
-### 9. Campaigns (`sdk.campaigns`)
+### 8. Campaigns (`sdk.campaigns`)
 
 ```typescript
 const estimate = await sdk.campaigns.estimate('promo', 1200);
@@ -179,7 +189,7 @@ const detail = await sdk.campaigns.get(campaign.id);
 await sdk.campaigns.cancel(campaign.id);
 ```
 
-### 10. Wallet (`sdk.wallet`)
+### 9. Wallet (`sdk.wallet`)
 
 ```typescript
 const transactions = await sdk.wallet.transactions(0, 20);
@@ -187,7 +197,7 @@ const autoRecharge = await sdk.wallet.getAutoRecharge();
 await sdk.wallet.updateAutoRecharge({ enabled: true, threshold: 50, amount: 200 });
 ```
 
-### 11. Numbers (`sdk.numbers`)
+### 10. Numbers (`sdk.numbers`)
 
 ```typescript
 const { numbers, slot } = await sdk.numbers.list();
@@ -195,7 +205,7 @@ await sdk.numbers.update(numbers[0].id, { alias: "Suporte" });
 const warming = await sdk.numbers.warming(numbers[0].id);
 ```
 
-### 12. Smart Links (`sdk.smartLinks`)
+### 11. Smart Links (`sdk.smartLinks`)
 
 ```typescript
 const link = await sdk.smartLinks.create({
@@ -204,9 +214,10 @@ const link = await sdk.smartLinks.create({
   defaultText: "Quero a oferta"
 });
 const stats = await sdk.smartLinks.stats(link.id);
+const { data: links, pagination } = await sdk.smartLinks.list({ page: 0, size: 50 });
 ```
 
-### 13. Raw API (`sdk.api`)
+### 12. Raw API (`sdk.api`)
 
 Escape hatch for endpoints without a typed resource yet. Inherits auth, `baseUrl`, timeout and retries.
 
@@ -227,7 +238,7 @@ try {
 } catch (error) {
   if (error instanceof AraraError) {
     console.error(error.statusCode, error.code, error.message, error.details);
-    if (error.code === 'RATE_LIMITED' && error.retryAfter !== undefined) {
+    if (error.statusCode === 429 && error.retryAfter !== undefined) {
       console.error(`Retry after ${error.retryAfter}s`);
     }
   }
@@ -237,10 +248,33 @@ try {
 | Property | Type | Description |
 | --- | --- | --- |
 | `statusCode` | `number \| undefined` | HTTP status. `undefined` for network errors |
-| `code` | `string` | API error code (e.g. `INSUFFICIENT_FUNDS`). `NETWORK_ERROR` when the request never got a response |
+| `code` | `string` | API error code (e.g. `INSUFFICIENT_FUNDS`). `NETWORK_ERROR` when the request never got a response. A 429 carries `SEND_RATE_LIMITED`, `MARKETING_FREQUENCY_EXCEEDED`, `BATCH_BUSY` or `RATE_LIMIT_EXCEEDED` |
 | `message` | `string` | Human-readable message from the API |
 | `details` | `object \| undefined` | Extra context from the API |
 | `retryAfter` | `number \| undefined` | Seconds to wait, from the `Retry-After` header |
+
+Two subclasses narrow the common cases:
+
+- `PlanFeatureLockedError` (403 `PLAN_FEATURE_LOCKED`): exposes `feature`, `currentPlan` and `upgradeTo`.
+- `AuthenticationError` (401, or 403 without an error code): the key was rejected (invalid, expired, IP not allowed, missing permission). Exception: `messages.get(id)` on a message owned by another user answers an empty 403, which the SDK raises as a plain `AraraError` with code `RESOURCE_FORBIDDEN`.
+
+```typescript
+import { PlanFeatureLockedError, AuthenticationError } from '@ararahq/sdk';
+
+try {
+  await sdk.campaigns.create(campaign);
+} catch (error) {
+  if (error instanceof PlanFeatureLockedError) {
+    showUpgrade(error.upgradeTo);
+  } else if (error instanceof AuthenticationError) {
+    rotateKey();
+  }
+}
+```
+
+## Migrating from 1.x
+
+See [CHANGELOG.md](CHANGELOG.md).
 
 ## License
 

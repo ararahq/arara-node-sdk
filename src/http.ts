@@ -1,5 +1,5 @@
-import axios, { AxiosError, AxiosInstance } from 'axios';
-import { AraraError } from './errors';
+import axios, { AxiosError, AxiosInstance, InternalAxiosRequestConfig } from 'axios';
+import { AraraError, AraraErrorParams, AuthenticationError, PlanFeatureLockedError } from './errors';
 
 export const DEFAULT_MAX_RETRIES = 3;
 
@@ -9,6 +9,14 @@ const NETWORK_ERROR_CODE = 'NETWORK_ERROR';
 const UNKNOWN_ERROR_CODE = 'UNKNOWN_ERROR';
 const RATE_LIMIT_STATUS = 429;
 const SERVER_ERROR_THRESHOLD = 500;
+const UNAUTHORIZED_STATUS = 401;
+const FORBIDDEN_STATUS = 403;
+const PLAN_FEATURE_LOCKED_CODE = 'PLAN_FEATURE_LOCKED';
+const IDEMPOTENCY_KEY_HEADER = 'Idempotency-Key';
+const SAFE_METHODS = new Set(['get', 'head', 'options', 'put', 'delete']);
+const KEYED_REPLAY_METHOD = 'post';
+const RESOURCE_FORBIDDEN_CODE = 'RESOURCE_FORBIDDEN';
+const MESSAGE_BY_ID_PATH = /^(?:https?:\/\/[^/]+)?(?:\/api)?\/v1\/messages\/[^/?]+(?:\?.*)?$/;
 
 interface ErrorEnvelopeBody {
     code?: string;
@@ -61,13 +69,67 @@ export function toAraraError(error: AxiosError): AraraError {
         });
     }
     const envelope = parseErrorEnvelope(response.data);
-    return new AraraError({
+    if (isForeignMessageLookup(error, response.status, response.data)) {
+        return new AraraError({
+            statusCode: response.status,
+            code: RESOURCE_FORBIDDEN_CODE,
+            message: 'This message belongs to another user of the organization.'
+        });
+    }
+    return buildTypedError({
         statusCode: response.status,
         code: envelope.code ?? UNKNOWN_ERROR_CODE,
         message: envelope.message ?? error.message ?? `Request failed with status ${response.status}`,
         details: envelope.details,
         retryAfter: parseRetryAfterSeconds(response.headers?.['retry-after'])
-    });
+    }, envelope.code);
+}
+
+/**
+ * GET /v1/messages/{id} answers 403 with an empty body when the message belongs to another
+ * user. The key was accepted, so this is not an authentication failure.
+ */
+function isForeignMessageLookup(error: AxiosError, status: number, data: unknown): boolean {
+    const method = (error.config?.method ?? 'get').toLowerCase();
+    const isEmptyBody = data === undefined || data === null || data === '';
+    return status === FORBIDDEN_STATUS
+        && method === 'get'
+        && isEmptyBody
+        && MESSAGE_BY_ID_PATH.test(error.config?.url ?? '');
+}
+
+function buildTypedError(params: AraraErrorParams, envelopeCode: string | undefined): AraraError {
+    if (params.statusCode === FORBIDDEN_STATUS && envelopeCode === PLAN_FEATURE_LOCKED_CODE) {
+        return new PlanFeatureLockedError(params);
+    }
+    const isKeyRejection = params.statusCode === FORBIDDEN_STATUS && envelopeCode === undefined;
+    if (params.statusCode === UNAUTHORIZED_STATUS || isKeyRejection) {
+        return new AuthenticationError(params);
+    }
+    return new AraraError(params);
+}
+
+function hasIdempotencyKey(headers: unknown): boolean {
+    if (!isRecord(headers)) {
+        return false;
+    }
+    const getter = (headers as { get?: unknown }).get;
+    const value = typeof getter === 'function'
+        ? (getter as (name: string) => unknown).call(headers, IDEMPOTENCY_KEY_HEADER)
+        : headers[IDEMPOTENCY_KEY_HEADER];
+    return typeof value === 'string' && value.trim() !== '';
+}
+
+/**
+ * A request may be replayed only when repeating it cannot duplicate side effects:
+ * idempotent HTTP methods, or a POST carrying an Idempotency-Key. PATCH is never replayed.
+ */
+export function isReplayableRequest(config: InternalAxiosRequestConfig): boolean {
+    const method = (config.method ?? 'get').toLowerCase();
+    if (SAFE_METHODS.has(method)) {
+        return true;
+    }
+    return method === KEYED_REPLAY_METHOD && hasIdempotencyKey(config.headers);
 }
 
 export function isRetryableError(error: AxiosError): boolean {
@@ -95,7 +157,7 @@ export function setupInterceptors(client: AxiosInstance, maxRetries: number): vo
             throw error;
         }
         const config = error.config;
-        if (config && isRetryableError(error)) {
+        if (config && isRetryableError(error) && isReplayableRequest(config)) {
             // @ts-expect-error retryCount is an internal property managed by the SDK.
             const attempt = config.retryCount ?? 0;
             if (attempt < maxRetries) {

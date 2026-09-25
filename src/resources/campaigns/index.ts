@@ -7,18 +7,17 @@ import {
     CampaignDetailResponse
 } from './model';
 import { SendMessageOptions } from '../messages/model';
+import { idempotencyHeaders } from '../idempotency';
 
 export class Campaigns extends BaseResource {
     /**
-     * Create a campaign.
+     * Create a campaign. Always carries an Idempotency-Key (caller or generated).
      * POST /v1/campaigns
      */
     async create(payload: CampaignRequest, options?: SendMessageOptions): Promise<CampaignResponse> {
-        const headers: Record<string, string> = {};
-        if (options?.idempotencyKey) {
-            headers['Idempotency-Key'] = options.idempotencyKey;
-        }
-        const response = await this.client.post<CampaignResponse>('/v1/campaigns', payload, { headers });
+        const response = await this.client.post<CampaignResponse>('/v1/campaigns', payload, {
+            headers: idempotencyHeaders(options?.idempotencyKey)
+        });
         return response.data;
     }
 
