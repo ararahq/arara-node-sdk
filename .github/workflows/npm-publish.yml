@@ -15,9 +15,13 @@ permissions:
 
 jobs:
   publish:
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          fetch-tags: true
 
       - uses: actions/setup-node@v4
         with:
@@ -39,6 +43,19 @@ jobs:
             echo "publish=false" >> "$GITHUB_OUTPUT"
             echo "::notice::$NAME@$LOCAL ja existe no npm, nada a publicar"
           else
+            LAST_TAG=$(git tag --list 'v*' --sort=-v:refname | head -1)
+            LAST=${LAST_TAG#v}
+            if [ -n "$LAST" ]; then
+              HIGHEST=$(printf '%s\n%s\n' "$LAST" "$LOCAL" | sort -V | tail -1)
+              if [ "$LOCAL" = "$LAST" ] || [ "$HIGHEST" != "$LOCAL" ]; then
+                echo "::error::versao $LOCAL nao e maior que a ultima tag $LAST_TAG"
+                exit 1
+              fi
+            fi
+            if ! grep -Eq "^## \[?${LOCAL//./\\.}\]?( |$)" CHANGELOG.md; then
+              echo "::error::CHANGELOG.md sem entrada '## $LOCAL'"
+              exit 1
+            fi
             echo "publish=true" >> "$GITHUB_OUTPUT"
           fi
           echo "version=$LOCAL" >> "$GITHUB_OUTPUT"
