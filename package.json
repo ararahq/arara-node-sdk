@@ -4,7 +4,7 @@
   "publishConfig": {
     "access": "public"
   },
-  "description": "SDK oficial da AraraHQ para Node.js. Simples, tipado e focado no desenvolvedor.",
+  "description": "Node.js SDK for the AraraHQ API. AraraHQ: WhatsApp for Brazilian companies. Team inbox with AI, campaigns and systems connected through the API.",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
@@ -18,8 +18,11 @@
     "url": "git+https://github.com/ararahq/arara-node-sdk.git"
   },
   "keywords": [
+    "ararahq",
     "arara",
     "whatsapp",
+    "whatsapp-business",
+    "brazil",
     "sdk",
     "messaging",
     "api",
