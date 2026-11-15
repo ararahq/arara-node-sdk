@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.0.1 (2026-11-15)
+
+Package description and README aligned with the current AraraHQ description. No code changes.
+
 ## 2.0.0 (2026-09-24)
 
 Aligns the SDK with the API contract. Breaking changes are listed with the migration.
